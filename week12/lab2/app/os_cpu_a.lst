@@ -1,0 +1,1353 @@
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 1
+
+
+   1               	# 1 "c:/lab2/ports/os_cpu_a.asm"
+   1               	;**************************************************************************************************
+   0               	
+   0               	
+   2               	;                                               uC/OS-II
+   3               	;                                         The Real-Time Kernel
+   4               	;
+   5               	;                                          AVR Specific code
+   6               	;                                           (AVR-GCC 3.x)
+   7               	;
+   8               	;
+   9               	; File         : OS_CPU_A.ASM
+  10               	; By           : Ole Saether
+  11               	; Port Version : V1.01
+  12               	;
+  13               	; AVR-GCC port version : 1.0 	2001-04-02 modified/ported to avr-gcc by Jesper Hansen (jesperh@telia
+  14               	;
+  15               	; Modifications by Julius Luukko 2003-02-19 (Julius.Luukko@lut.fi):
+  16               	;
+  17               	; - Minor modification to OSTickISR's declaration to global and addition of #include <avr/io.h> 
+  18               	;   in order to work with gcc 3.3.
+  19               	; - Moved 'sei' from the beginning of OSTickISR after the increasing of OSIntNesting (as the book s
+  20               	; - Changed the order of reloading the timer counter and calling of OSIntExit
+  21               	; - Changed OSIntCtxSw to the way it is supposed to be with OS_VERSION >= 251
+  22               	; - Changed OSTickISR so that is saves the stack pointer into the current task's OS_TCB if OSTickIS
+  23               	;   first level ISR
+  24               	; - os_cfg.h must be included (definitions of CPU_CLOCK_HZ and OS_TICKS_PER_SEC)
+  25               	; - avr/io.h is included to get SIG_OVERFLOW0 to produce the code to the interrupt vector table
+  26               	;
+  27               	; Modifications by Julius Luukko 2003-03-06 (Julius.Luukko@lut.fi):
+  28               	;
+  29               	; - RAMPZ is also saved to the stack
+  30               	;
+  31               	; Modifications by Julius Luukko 2003-03-18 (Julius.Luukko@lut.fi):
+  32               	;
+  33               	; - RAMPZ and SREG were popped out of the stack in the wrong order! Corrected this.
+  34               	; - Divided macros PUSHRS and POPRS into to macros PUSHRS, PUSHSREG, POPRS and POPSREG. Additionall
+  35               	; in ISRs macro called PUSHSREGISR must be used. It sets the I bit i SREG, since its always unset, 
+  36               	; ISR is entered. It must be, however, set to enable interrupts when the task is run again.
+  37               	; - RCALLs changed to CALLs. This allows the code of called functions to be further away from the c
+  38               	;   (fixes the "relocating truncated to fit" error from the linker)
+  39               	; 
+  40               	;
+  41               	; Modifications by Julius Luukko 2003-03-19 (Julius.Luukko@lut.fi):
+  42               	;
+  43               	; - timer interrupt is changed so that the timer counter register is updated right after _not_first
+  44               	;   (was AFTER the call to OSIntExit!!)
+  45               	;
+  46               	; Modifications by Julius Luukko 2003-06-24 (Julius.Luukko@lut.fi):
+  47               	;
+  48               	; - I/O port addressing is now done using the macro _SFR_IO_ADDR from avr-libc and the address
+  49               	; definitions are removed from here
+  50               	; - RAMPZ is pushed and popped only if it is defined, i.e. with chips that have it
+  51               	;
+  52               	; Modifications by Julius Luukko 2003-07-21 (Julius.Luukko@lut.fi) for V2.70
+  53               	;
+  54               	; - OSTaskSwHook is not called if OS_TASK_SW_HOOK_EN == 0
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 2
+
+
+  55               	; - defines typedef to ; so that os_cfg_r.h can be used more easily as a starting point for
+  56               	;   the application specific os_cfg.h
+  57               	;
+  58               	;**************************************************************************************************
+  59               	
+  60               	;**************************************************************************************************
+  61               	;                                      C PREPROCESSOR DIRECTIVES
+  62               	;**************************************************************************************************
+  63               	
+  64               	#include <avr/io.h>
+   1               	/* Copyright (c) 2002,2003,2005,2006,2007 Marek Michalkiewicz, Joerg Wunsch
+   2               	   Copyright (c) 2007 Eric B. Weddington
+   3               	   All rights reserved.
+   4               	
+   5               	   Redistribution and use in source and binary forms, with or without
+   6               	   modification, are permitted provided that the following conditions are met:
+   7               	
+   8               	   * Redistributions of source code must retain the above copyright
+   9               	     notice, this list of conditions and the following disclaimer.
+  10               	
+  11               	   * Redistributions in binary form must reproduce the above copyright
+  12               	     notice, this list of conditions and the following disclaimer in
+  13               	     the documentation and/or other materials provided with the
+  14               	     distribution.
+  15               	
+  16               	   * Neither the name of the copyright holders nor the names of
+  17               	     contributors may be used to endorse or promote products derived
+  18               	     from this software without specific prior written permission.
+  19               	
+  20               	  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  21               	  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  22               	  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  23               	  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  24               	  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  25               	  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  26               	  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  27               	  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  28               	  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  29               	  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  30               	  POSSIBILITY OF SUCH DAMAGE. */
+  31               	
+  32               	/* $Id: io.h,v 1.52.2.28 2009/12/20 17:02:53 arcanum Exp $ */
+  33               	
+  34               	/** \file */
+  35               	/** \defgroup avr_io <avr/io.h>: AVR device-specific IO definitions
+  36               	    \code #include <avr/io.h> \endcode
+  37               	
+  38               	    This header file includes the apropriate IO definitions for the
+  39               	    device that has been specified by the <tt>-mmcu=</tt> compiler
+  40               	    command-line switch.  This is done by diverting to the appropriate
+  41               	    file <tt>&lt;avr/io</tt><em>XXXX</em><tt>.h&gt;</tt> which should
+  42               	    never be included directly.  Some register names common to all
+  43               	    AVR devices are defined directly within <tt>&lt;avr/common.h&gt;</tt>,
+  44               	    which is included in <tt>&lt;avr/io.h&gt;</tt>,
+  45               	    but most of the details come from the respective include file.
+  46               	
+  47               	    Note that this file always includes the following files:
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 3
+
+
+  48               	    \code 
+  49               	    #include <avr/sfr_defs.h>
+  50               	    #include <avr/portpins.h>
+  51               	    #include <avr/common.h>
+  52               	    #include <avr/version.h>
+  53               	    \endcode
+  54               	    See \ref avr_sfr for more details about that header file.
+  55               	
+  56               	    Included are definitions of the IO register set and their
+  57               	    respective bit values as specified in the Atmel documentation.
+  58               	    Note that inconsistencies in naming conventions,
+  59               	    so even identical functions sometimes get different names on
+  60               	    different devices.
+  61               	
+  62               	    Also included are the specific names useable for interrupt
+  63               	    function definitions as documented
+  64               	    \ref avr_signames "here".
+  65               	
+  66               	    Finally, the following macros are defined:
+  67               	
+  68               	    - \b RAMEND
+  69               	    <br>
+  70               	    The last on-chip RAM address.
+  71               	    <br>
+  72               	    - \b XRAMEND
+  73               	    <br>
+  74               	    The last possible RAM location that is addressable. This is equal to 
+  75               	    RAMEND for devices that do not allow for external RAM. For devices 
+  76               	    that allow external RAM, this will be larger than RAMEND.
+  77               	    <br>
+  78               	    - \b E2END
+  79               	    <br>
+  80               	    The last EEPROM address.
+  81               	    <br>
+  82               	    - \b FLASHEND
+  83               	    <br>
+  84               	    The last byte address in the Flash program space.
+  85               	    <br>
+  86               	    - \b SPM_PAGESIZE
+  87               	    <br>
+  88               	    For devices with bootloader support, the flash pagesize
+  89               	    (in bytes) to be used for the \c SPM instruction. 
+  90               	    - \b E2PAGESIZE
+  91               	    <br>
+  92               	    The size of the EEPROM page.
+  93               	    
+  94               	*/
+  95               	
+  96               	#ifndef _AVR_IO_H_
+  97               	#define _AVR_IO_H_
+  98               	
+  99               	#include <avr/sfr_defs.h>
+   1               	/* Copyright (c) 2002, Marek Michalkiewicz <marekm@amelek.gda.pl>
+ 100               	
+ 101               	#if defined (__AVR_AT94K__)
+ 102               	#  include <avr/ioat94k.h>
+ 103               	#elif defined (__AVR_AT43USB320__)
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 4
+
+
+ 104               	#  include <avr/io43u32x.h>
+ 105               	#elif defined (__AVR_AT43USB355__)
+ 106               	#  include <avr/io43u35x.h>
+ 107               	#elif defined (__AVR_AT76C711__)
+ 108               	#  include <avr/io76c711.h>
+ 109               	#elif defined (__AVR_AT86RF401__)
+ 110               	#  include <avr/io86r401.h>
+ 111               	#elif defined (__AVR_AT90PWM1__)
+ 112               	#  include <avr/io90pwm1.h>
+ 113               	#elif defined (__AVR_AT90PWM2__)
+ 114               	#  include <avr/io90pwmx.h>
+ 115               	#elif defined (__AVR_AT90PWM2B__)
+ 116               	#  include <avr/io90pwm2b.h>
+ 117               	#elif defined (__AVR_AT90PWM3__)
+ 118               	#  include <avr/io90pwmx.h>
+ 119               	#elif defined (__AVR_AT90PWM3B__)
+ 120               	#  include <avr/io90pwm3b.h>
+ 121               	#elif defined (__AVR_AT90PWM216__)
+ 122               	#  include <avr/io90pwm216.h>
+ 123               	#elif defined (__AVR_AT90PWM316__)
+ 124               	#  include <avr/io90pwm316.h>
+ 125               	#elif defined (__AVR_AT90PWM81__)
+ 126               	#  include <avr/io90pwm81.h>
+ 127               	#elif defined (__AVR_ATmega8U2__)
+ 128               	#  include <avr/iom8u2.h>
+ 129               	#elif defined (__AVR_ATmega16M1__)
+ 130               	#  include <avr/iom16m1.h>
+ 131               	#elif defined (__AVR_ATmega16U2__)
+ 132               	#  include <avr/iom16u2.h>
+ 133               	#elif defined (__AVR_ATmega16U4__)
+ 134               	#  include <avr/iom16u4.h>
+ 135               	#elif defined (__AVR_ATmega32C1__)
+ 136               	#  include <avr/iom32c1.h>
+ 137               	#elif defined (__AVR_ATmega32M1__)
+ 138               	#  include <avr/iom32m1.h>
+ 139               	#elif defined (__AVR_ATmega32U2__)
+ 140               	#  include <avr/iom32u2.h>
+ 141               	#elif defined (__AVR_ATmega32U4__)
+ 142               	#  include <avr/iom32u4.h>
+ 143               	#elif defined (__AVR_ATmega32U6__)
+ 144               	#  include <avr/iom32u6.h>
+ 145               	#elif defined (__AVR_ATmega64C1__)
+ 146               	#  include <avr/iom64c1.h>
+ 147               	#elif defined (__AVR_ATmega64M1__)
+ 148               	#  include <avr/iom64m1.h>
+ 149               	#elif defined (__AVR_ATmega128__)
+ 150               	#  include <avr/iom128.h>
+   1               	/* Copyright (c) 2002, Peter Jansen
+ 151               	#elif defined (__AVR_ATmega1280__)
+ 152               	#  include <avr/iom1280.h>
+ 153               	#elif defined (__AVR_ATmega1281__)
+ 154               	#  include <avr/iom1281.h>
+ 155               	#elif defined (__AVR_ATmega1284P__)
+ 156               	#  include <avr/iom1284p.h>
+ 157               	#elif defined (__AVR_ATmega128RFA1__)
+ 158               	#  include <avr/iom128rfa1.h>
+ 159               	#elif defined (__AVR_ATmega2560__)
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 5
+
+
+ 160               	#  include <avr/iom2560.h>
+ 161               	#elif defined (__AVR_ATmega2561__)
+ 162               	#  include <avr/iom2561.h>
+ 163               	#elif defined (__AVR_AT90CAN32__)
+ 164               	#  include <avr/iocan32.h>
+ 165               	#elif defined (__AVR_AT90CAN64__)
+ 166               	#  include <avr/iocan64.h>
+ 167               	#elif defined (__AVR_AT90CAN128__)
+ 168               	#  include <avr/iocan128.h>
+ 169               	#elif defined (__AVR_AT90USB82__)
+ 170               	#  include <avr/iousb82.h>
+ 171               	#elif defined (__AVR_AT90USB162__)
+ 172               	#  include <avr/iousb162.h>
+ 173               	#elif defined (__AVR_AT90USB646__)
+ 174               	#  include <avr/iousb646.h>
+ 175               	#elif defined (__AVR_AT90USB647__)
+ 176               	#  include <avr/iousb647.h>
+ 177               	#elif defined (__AVR_AT90USB1286__)
+ 178               	#  include <avr/iousb1286.h>
+ 179               	#elif defined (__AVR_AT90USB1287__)
+ 180               	#  include <avr/iousb1287.h>
+ 181               	#elif defined (__AVR_ATmega64__)
+ 182               	#  include <avr/iom64.h>
+ 183               	#elif defined (__AVR_ATmega640__)
+ 184               	#  include <avr/iom640.h>
+ 185               	#elif defined (__AVR_ATmega644__) || defined (__AVR_ATmega644A__)
+ 186               	#  include <avr/iom644.h>
+ 187               	#elif defined (__AVR_ATmega644P__)
+ 188               	#  include <avr/iom644p.h>
+ 189               	#elif defined (__AVR_ATmega644PA__)
+ 190               	#  include <avr/iom644pa.h>
+ 191               	#elif defined (__AVR_ATmega645__) || defined (__AVR_ATmega645A__) || defined (__AVR_ATmega645P__)
+ 192               	#  include <avr/iom645.h>
+ 193               	#elif defined (__AVR_ATmega6450__) || defined (__AVR_ATmega6450A__) || defined (__AVR_ATmega6450P__
+ 194               	#  include <avr/iom6450.h>
+ 195               	#elif defined (__AVR_ATmega649__) || defined (__AVR_ATmega649A__)
+ 196               	#  include <avr/iom649.h>
+ 197               	#elif defined (__AVR_ATmega6490__) || defined (__AVR_ATmega6490A__) || defined (__AVR_ATmega6490P__
+ 198               	#  include <avr/iom6490.h>
+ 199               	#elif defined (__AVR_ATmega649P__)
+ 200               	#  include <avr/iom649p.h>
+ 201               	#elif defined (__AVR_ATmega64HVE__)
+ 202               	#  include <avr/iom64hve.h>
+ 203               	#elif defined (__AVR_ATmega103__)
+ 204               	#  include <avr/iom103.h>
+ 205               	#elif defined (__AVR_ATmega32__)
+ 206               	#  include <avr/iom32.h>
+ 207               	#elif defined (__AVR_ATmega323__)
+ 208               	#  include <avr/iom323.h>
+ 209               	#elif defined (__AVR_ATmega324P__) || defined (__AVR_ATmega324A__)
+ 210               	#  include <avr/iom324.h>
+ 211               	#elif defined (__AVR_ATmega324PA__)
+ 212               	#  include <avr/iom324pa.h>
+ 213               	#elif defined (__AVR_ATmega325__)
+ 214               	#  include <avr/iom325.h>
+ 215               	#elif defined (__AVR_ATmega325P__)
+ 216               	#  include <avr/iom325.h>
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 6
+
+
+ 217               	#elif defined (__AVR_ATmega3250__)
+ 218               	#  include <avr/iom3250.h>
+ 219               	#elif defined (__AVR_ATmega3250P__)
+ 220               	#  include <avr/iom3250.h>
+ 221               	#elif defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328__)
+ 222               	#  include <avr/iom328p.h>
+ 223               	#elif defined (__AVR_ATmega329__)
+ 224               	#  include <avr/iom329.h>
+ 225               	#elif defined (__AVR_ATmega329P__) || defined (__AVR_ATmega329PA__)
+ 226               	#  include <avr/iom329.h>
+ 227               	#elif defined (__AVR_ATmega3290__)
+ 228               	#  include <avr/iom3290.h>
+ 229               	#elif defined (__AVR_ATmega3290P__)
+ 230               	#  include <avr/iom3290.h>
+ 231               	#elif defined (__AVR_ATmega32HVB__)
+ 232               	#  include <avr/iom32hvb.h>
+ 233               	#elif defined (__AVR_ATmega406__)
+ 234               	#  include <avr/iom406.h>
+ 235               	#elif defined (__AVR_ATmega16__)
+ 236               	#  include <avr/iom16.h>
+ 237               	#elif defined (__AVR_ATmega16A__)
+ 238               	#  include <avr/iom16a.h>
+ 239               	#elif defined (__AVR_ATmega161__)
+ 240               	#  include <avr/iom161.h>
+ 241               	#elif defined (__AVR_ATmega162__)
+ 242               	#  include <avr/iom162.h>
+ 243               	#elif defined (__AVR_ATmega163__)
+ 244               	#  include <avr/iom163.h>
+ 245               	#elif defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164A__)
+ 246               	#  include <avr/iom164.h>
+ 247               	#elif defined (__AVR_ATmega165__) || defined (__AVR_ATmega165A__)
+ 248               	#  include <avr/iom165.h>
+ 249               	#elif defined (__AVR_ATmega165P__)
+ 250               	#  include <avr/iom165p.h>
+ 251               	#elif defined (__AVR_ATmega168__) || defined (__AVR_ATmega168A__)
+ 252               	#  include <avr/iom168.h>
+ 253               	#elif defined (__AVR_ATmega168P__)
+ 254               	#  include <avr/iom168p.h>
+ 255               	#elif defined (__AVR_ATmega169__) || defined (__AVR_ATmega169A__)
+ 256               	#  include <avr/iom169.h>
+ 257               	#elif defined (__AVR_ATmega169P__)
+ 258               	#  include <avr/iom169p.h>
+ 259               	#elif defined (__AVR_ATmega169PA__)
+ 260               	#  include <avr/iom169pa.h>
+ 261               	#elif defined (__AVR_ATmega8HVA__)
+ 262               	#  include <avr/iom8hva.h>
+ 263               	#elif defined (__AVR_ATmega16HVA__)
+ 264               	#  include <avr/iom16hva.h>
+ 265               	#elif defined (__AVR_ATmega16HVA2__)
+ 266               	#  include <avr/iom16hva2.h>
+ 267               	#elif defined (__AVR_ATmega16HVB__)
+ 268               	#  include <avr/iom16hvb.h>
+ 269               	#elif defined (__AVR_ATmega8__)
+ 270               	#  include <avr/iom8.h>
+ 271               	#elif defined (__AVR_ATmega48__) || defined (__AVR_ATmega48A__)
+ 272               	#  include <avr/iom48.h>
+ 273               	#elif defined (__AVR_ATmega48P__)
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 7
+
+
+ 274               	#  include <avr/iom48p.h>
+ 275               	#elif defined (__AVR_ATmega88__) || defined (__AVR_ATmega88A__)
+ 276               	#  include <avr/iom88.h>
+ 277               	#elif defined (__AVR_ATmega88P__)
+ 278               	#  include <avr/iom88p.h>
+ 279               	#elif defined (__AVR_ATmega88PA__)
+ 280               	#  include <avr/iom88pa.h>
+ 281               	#elif defined (__AVR_ATmega8515__)
+ 282               	#  include <avr/iom8515.h>
+ 283               	#elif defined (__AVR_ATmega8535__)
+ 284               	#  include <avr/iom8535.h>
+ 285               	#elif defined (__AVR_AT90S8535__)
+ 286               	#  include <avr/io8535.h>
+ 287               	#elif defined (__AVR_AT90C8534__)
+ 288               	#  include <avr/io8534.h>
+ 289               	#elif defined (__AVR_AT90S8515__)
+ 290               	#  include <avr/io8515.h>
+ 291               	#elif defined (__AVR_AT90S4434__)
+ 292               	#  include <avr/io4434.h>
+ 293               	#elif defined (__AVR_AT90S4433__)
+ 294               	#  include <avr/io4433.h>
+ 295               	#elif defined (__AVR_AT90S4414__)
+ 296               	#  include <avr/io4414.h>
+ 297               	#elif defined (__AVR_ATtiny22__)
+ 298               	#  include <avr/iotn22.h>
+ 299               	#elif defined (__AVR_ATtiny26__)
+ 300               	#  include <avr/iotn26.h>
+ 301               	#elif defined (__AVR_AT90S2343__)
+ 302               	#  include <avr/io2343.h>
+ 303               	#elif defined (__AVR_AT90S2333__)
+ 304               	#  include <avr/io2333.h>
+ 305               	#elif defined (__AVR_AT90S2323__)
+ 306               	#  include <avr/io2323.h>
+ 307               	#elif defined (__AVR_AT90S2313__)
+ 308               	#  include <avr/io2313.h>
+ 309               	#elif defined (__AVR_ATtiny2313__)
+ 310               	#  include <avr/iotn2313.h>
+ 311               	#elif defined (__AVR_ATtiny2313A__)
+ 312               	#  include <avr/iotn2313a.h>
+ 313               	#elif defined (__AVR_ATtiny13__)
+ 314               	#  include <avr/iotn13.h>
+ 315               	#elif defined (__AVR_ATtiny13A__)
+ 316               	#  include <avr/iotn13a.h>
+ 317               	#elif defined (__AVR_ATtiny25__)
+ 318               	#  include <avr/iotn25.h>
+ 319               	#elif defined (__AVR_ATtiny4313__)
+ 320               	#  include <avr/iotn4313.h>
+ 321               	#elif defined (__AVR_ATtiny45__)
+ 322               	#  include <avr/iotn45.h>
+ 323               	#elif defined (__AVR_ATtiny85__)
+ 324               	#  include <avr/iotn85.h>
+ 325               	#elif defined (__AVR_ATtiny24__)
+ 326               	#  include <avr/iotn24.h>
+ 327               	#elif defined (__AVR_ATtiny24A__)
+ 328               	#  include <avr/iotn24a.h>
+ 329               	#elif defined (__AVR_ATtiny44__)
+ 330               	#  include <avr/iotn44.h>
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 8
+
+
+ 331               	#elif defined (__AVR_ATtiny44A__)
+ 332               	#  include <avr/iotn44a.h>
+ 333               	#elif defined (__AVR_ATtiny84__)
+ 334               	#  include <avr/iotn84.h>
+ 335               	#elif defined (__AVR_ATtiny261__)
+ 336               	#  include <avr/iotn261.h>
+ 337               	#elif defined (__AVR_ATtiny261A__)
+ 338               	#  include <avr/iotn261a.h>
+ 339               	#elif defined (__AVR_ATtiny461__)
+ 340               	#  include <avr/iotn461.h>
+ 341               	#elif defined (__AVR_ATtiny461A__)
+ 342               	#  include <avr/iotn461a.h>
+ 343               	#elif defined (__AVR_ATtiny861__)
+ 344               	#  include <avr/iotn861.h>
+ 345               	#elif defined (__AVR_ATtiny861A__)
+ 346               	#  include <avr/iotn861a.h>
+ 347               	#elif defined (__AVR_ATtiny43U__)
+ 348               	#  include <avr/iotn43u.h>
+ 349               	#elif defined (__AVR_ATtiny48__)
+ 350               	#  include <avr/iotn48.h>
+ 351               	#elif defined (__AVR_ATtiny88__)
+ 352               	#  include <avr/iotn88.h>
+ 353               	#elif defined (__AVR_ATtiny87__)
+ 354               	#  include <avr/iotn87.h>
+ 355               	#elif defined (__AVR_ATtiny167__)
+ 356               	#  include <avr/iotn167.h>
+ 357               	#elif defined (__AVR_AT90SCR100__)
+ 358               	#  include <avr/io90scr100.h>
+ 359               	#elif defined (__AVR_ATxmega16A4__)
+ 360               	#  include <avr/iox16a4.h>
+ 361               	#elif defined (__AVR_ATxmega16D4__)
+ 362               	#  include <avr/iox16d4.h>
+ 363               	#elif defined (__AVR_ATxmega32A4__)
+ 364               	#  include <avr/iox32a4.h>
+ 365               	#elif defined (__AVR_ATxmega32D4__)
+ 366               	#  include <avr/iox32d4.h>
+ 367               	#elif defined (__AVR_ATxmega64A1__)
+ 368               	#  include <avr/iox64a1.h>
+ 369               	#elif defined (__AVR_ATxmega64A3__)
+ 370               	#  include <avr/iox64a3.h>
+ 371               	#elif defined (__AVR_ATxmega64D3__)
+ 372               	#  include <avr/iox64d3.h>
+ 373               	#elif defined (__AVR_ATxmega128A1__)
+ 374               	#  include <avr/iox128a1.h>
+ 375               	#elif defined (__AVR_ATxmega128A3__)
+ 376               	#  include <avr/iox128a3.h>
+ 377               	#elif defined (__AVR_ATxmega128D3__)
+ 378               	#  include <avr/iox128d3.h>
+ 379               	#elif defined (__AVR_ATxmega192A3__)
+ 380               	#  include <avr/iox192a3.h>
+ 381               	#elif defined (__AVR_ATxmega192D3__)
+ 382               	#  include <avr/iox192d3.h>
+ 383               	#elif defined (__AVR_ATxmega256A3__)
+ 384               	#  include <avr/iox256a3.h>
+ 385               	#elif defined (__AVR_ATxmega256A3B__)
+ 386               	#  include <avr/iox256a3b.h>
+ 387               	#elif defined (__AVR_ATxmega256D3__)
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 9
+
+
+ 388               	#  include <avr/iox256d3.h>
+ 389               	#elif defined (__AVR_ATA6289__)
+ 390               	#  include <avr/ioa6289.h>
+ 391               	/* avr1: the following only supported for assembler programs */
+ 392               	#elif defined (__AVR_ATtiny28__)
+ 393               	#  include <avr/iotn28.h>
+ 394               	#elif defined (__AVR_AT90S1200__)
+ 395               	#  include <avr/io1200.h>
+ 396               	#elif defined (__AVR_ATtiny15__)
+ 397               	#  include <avr/iotn15.h>
+ 398               	#elif defined (__AVR_ATtiny12__)
+ 399               	#  include <avr/iotn12.h>
+ 400               	#elif defined (__AVR_ATtiny11__)
+ 401               	#  include <avr/iotn11.h>
+ 402               	#else
+ 403               	#  if !defined(__COMPILING_AVR_LIBC__)
+ 404               	#    warning "device type not defined"
+ 405               	#  endif
+ 406               	#endif
+ 407               	
+ 408               	#include <avr/portpins.h>
+   1               	/* Copyright (c) 2003  Theodore A. Roth
+ 409               	
+ 410               	#include <avr/common.h>
+   1               	/* Copyright (c) 2007 Eric B. Weddington
+ 411               	
+ 412               	#include <avr/version.h>
+   1               	/* Copyright (c) 2005, Joerg Wunsch                               -*- c -*-
+ 413               	
+ 414               	/* Include fuse.h after individual IO header files. */
+ 415               	#include <avr/fuse.h>
+   1               	/* Copyright (c) 2007, Atmel Corporation
+ 416               	
+ 417               	/* Include lock.h after individual IO header files. */
+ 418               	#include <avr/lock.h>
+   1               	/* Copyright (c) 2007, Atmel Corporation
+ 419               	
+  65               	
+  66               	#define OS_CPU_A
+  67               	#include "os_cpu.h"
+   1               	/*
+  68               	#define typedef	; 
+  69               	#include "os_cfg.h"
+   1               	/*
+   2               	***************************************************************************************************
+   3               	*                                                uC/OS-II
+   4               	*                                          The Real-Time Kernel
+   5               	*
+   6               	*                           (c) Copyright 1992-2003, Jean J. Labrosse, Weston, FL
+   7               	*                                           All Rights Reserved
+   8               	*
+   9               	*                                  uC/OS-II Configuration File for V2.7x
+  10               	*
+  11               	* File : OS_CFG.H
+  12               	* By   : Jean J. Labrosse
+  13               	*
+  14               	* Modifications by Julius Luukko 2003-07-14 (Julius.Luukko@lut.fi) for avr-gcc test program.
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 10
+
+
+  15               	*
+  16               	* - CPU_CLOCK_HZ must be defined here (used in os_cpu_a.asm)
+  17               	* - defines a default stack size, which is used in all stack size definitions
+  18               	*
+  19               	* Your applications must define CPU_CLOCK_HZ!
+  20               	*
+  21               	***************************************************************************************************
+  22               	*/
+  23               	
+  24               	#ifndef OS_CFG_H
+  25               	#define OS_CFG_H
+  26               	
+  27               	#define CPU_CLOCK_HZ       16000000
+  28               	
+  29               	#define OS_TASK_DEF_STK_SIZE    128    /* Default stack size                                       
+  30               	
+  31               	                                       /* ---------------------- MISCELLANEOUS --------------------
+  32               	#define OS_ARG_CHK_EN             0    /* Enable (1) or Disable (0) argument checking              
+  33               	#define OS_CPU_HOOKS_EN           1    /* uC/OS-II hooks are found in the processor port files     
+  34               	
+  35               	#define OS_DEBUG_EN               1    /* Enable(1) debug variables                                
+  36               	
+  37               	#define OS_EVENT_NAME_SIZE       32    /* Determine the size of the name of a Sem, Mutex, Mbox or Q
+  38               	
+  39               	#define OS_LOWEST_PRIO           12    /* Defines the lowest priority that can be assigned ...     
+  40               	                                       /* ... MUST NEVER be higher than 63!                        
+  41               	
+  42               	#define OS_MAX_EVENTS             3    /* Max. number of event control blocks in your application  
+  43               	#define OS_MAX_FLAGS              1    /* Max. number of Event Flag Groups    in your application  
+  44               	#define OS_MAX_MEM_PART           1    /* Max. number of memory partitions                         
+  45               	#define OS_MAX_QS                 2    /* Max. number of queue control blocks in your application  
+  46               	#define OS_MAX_TASKS             11    /* Max. number of tasks in your application, MUST be >= 2   
+  47               	
+  48               	#define OS_SCHED_LOCK_EN          1    /*     Include code for OSSchedLock() and OSSchedUnlock()   
+  49               	
+  50               	#define OS_TASK_IDLE_STK_SIZE   OS_TASK_DEF_STK_SIZE
+  51               	                                       /* Idle task stack size (# of OS_STK wide entries)          
+  52               	
+  53               	#define OS_TASK_STAT_EN           1    /* Enable (1) or Disable(0) the statistics task             
+  54               	#define OS_TASK_STAT_STK_SIZE   OS_TASK_DEF_STK_SIZE
+  55               	                                       /* Statistics task stack size (# of OS_STK wide entries)    
+  56               	#define OS_TASK_STAT_STK_CHK_EN   1    /* Check task stacks from statistic task                    
+  57               	
+  58               	#define OS_TICK_STEP_EN           1    /* Enable tick stepping feature for uC/OS-View              
+  59               	#define OS_TICKS_PER_SEC         100    /* Set the number of ticks in one second                   
+  60               	
+  61               	
+  62               	                                       /* ----------------------- EVENT FLAGS ---------------------
+  63               	#define OS_FLAG_EN                0    /* Enable (1) or Disable (0) code generation for EVENT FLAGS
+  64               	#define OS_FLAG_WAIT_CLR_EN       0    /* Include code for Wait on Clear EVENT FLAGS               
+  65               	#define OS_FLAG_ACCEPT_EN         0    /*     Include code for OSFlagAccept()                      
+  66               	#define OS_FLAG_DEL_EN            0    /*     Include code for OSFlagDel()                         
+  67               	#define OS_FLAG_NAME_SIZE        32    /*     Determine the size of the name of an event flag group
+  68               	#define OS_FLAG_QUERY_EN          0    /*     Include code for OSFlagQuery()                       
+  69               	
+  70               	
+  71               	                                       /* -------------------- MESSAGE MAILBOXES ------------------
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 11
+
+
+  72               	#define OS_MBOX_EN                1    /* Enable (1) or Disable (0) code generation for MAILBOXES  
+  73               	#define OS_MBOX_ACCEPT_EN         0    /*     Include code for OSMboxAccept()                      
+  74               	#define OS_MBOX_DEL_EN            0    /*     Include code for OSMboxDel()                         
+  75               	#define OS_MBOX_POST_EN           1    /*     Include code for OSMboxPost()                        
+  76               	#define OS_MBOX_POST_OPT_EN       0    /*     Include code for OSMboxPostOpt()                     
+  77               	#define OS_MBOX_QUERY_EN          0    /*     Include code for OSMboxQuery()                       
+  78               	
+  79               	
+  80               	                                       /* --------------------- MEMORY MANAGEMENT -----------------
+  81               	#define OS_MEM_EN                 0    /* Enable (1) or Disable (0) code generation for MEMORY MANA
+  82               	#define OS_MEM_QUERY_EN           0    /*     Include code for OSMemQuery()                        
+  83               	#define OS_MEM_NAME_SIZE         32    /*     Determine the size of a memory partition name        
+  84               	
+  85               	
+  86               	                                       /* ---------------- MUTUAL EXCLUSION SEMAPHORES ------------
+  87               	#define OS_MUTEX_EN               0    /* Enable (1) or Disable (0) code generation for MUTEX      
+  88               	#define OS_MUTEX_ACCEPT_EN        0    /*     Include code for OSMutexAccept()                     
+  89               	#define OS_MUTEX_DEL_EN           0    /*     Include code for OSMutexDel()                        
+  90               	#define OS_MUTEX_QUERY_EN         0    /*     Include code for OSMutexQuery()                      
+  91               	
+  92               	
+  93               	                                       /* ---------------------- MESSAGE QUEUES -------------------
+  94               	#define OS_Q_EN                   0    /* Enable (1) or Disable (0) code generation for QUEUES     
+  95               	#define OS_Q_ACCEPT_EN            0    /*     Include code for OSQAccept()                         
+  96               	#define OS_Q_DEL_EN               0    /*     Include code for OSQDel()                            
+  97               	#define OS_Q_FLUSH_EN             0    /*     Include code for OSQFlush()                          
+  98               	#define OS_Q_POST_EN              0    /*     Include code for OSQPost()                           
+  99               	#define OS_Q_POST_FRONT_EN        0    /*     Include code for OSQPostFront()                      
+ 100               	#define OS_Q_POST_OPT_EN          0    /*     Include code for OSQPostOpt()                        
+ 101               	#define OS_Q_QUERY_EN             0    /*     Include code for OSQQuery()                          
+ 102               	
+ 103               	
+ 104               	                                       /* ------------------------ SEMAPHORES ---------------------
+ 105               	#define OS_SEM_EN                 1    /* Enable (1) or Disable (0) code generation for SEMAPHORES 
+ 106               	#define OS_SEM_ACCEPT_EN          0    /*    Include code for OSSemAccept()                        
+ 107               	#define OS_SEM_DEL_EN             0    /*    Include code for OSSemDel()                           
+ 108               	#define OS_SEM_QUERY_EN           0    /*    Include code for OSSemQuery()                         
+ 109               	
+ 110               	
+ 111               	                                       /* --------------------- TASK MANAGEMENT -------------------
+ 112               	#define OS_TASK_CHANGE_PRIO_EN    0    /*     Include code for OSTaskChangePrio()                  
+ 113               	#define OS_TASK_CREATE_EN         1    /*     Include code for OSTaskCreate()                      
+ 114               	#define OS_TASK_CREATE_EXT_EN     0    /*     Include code for OSTaskCreateExt()                   
+ 115               	#define OS_TASK_DEL_EN            0    /*     Include code for OSTaskDel()                         
+ 116               	#define OS_TASK_NAME_SIZE        32    /*     Determine the size of a task name                    
+ 117               	#define OS_TASK_PROFILE_EN        0    /*     Include variables in OS_TCB for profiling            
+ 118               	#define OS_TASK_QUERY_EN          0    /*     Include code for OSTaskQuery()                       
+ 119               	#define OS_TASK_SUSPEND_EN        0    /*     Include code for OSTaskSuspend() and OSTaskResume()  
+ 120               	#define OS_TASK_SW_HOOK_EN        1    /*     Include code for OSTaskSwHook()                      
+ 121               	
+ 122               	
+ 123               	                                       /* --------------------- TIME MANAGEMENT -------------------
+ 124               	#define OS_TIME_DLY_HMSM_EN       1    /*     Include code for OSTimeDlyHMSM()                     
+ 125               	#define OS_TIME_DLY_RESUME_EN     0    /*     Include code for OSTimeDlyResume()                   
+ 126               	#define OS_TIME_GET_SET_EN        0    /*     Include code for OSTimeGet() and OSTimeSet()         
+ 127               	#define OS_TIME_TICK_HOOK_EN      1    /*     Include code for OSTimeTickHook()                    
+ 128               	
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 12
+
+
+ 129               	
+ 130               	typedef INT8U             OS_FLAGS;    /* Data type for event flag bits (8, 16 or 32 bits)         
+ 131               	
+  70               	
+  71               	#ifndef OS_TASK_SW_HOOK_EN
+  72               	#define OS_TASK_SW_HOOK_EN 1
+  73               	#endif
+  74               		
+  75               	;**************************************************************************************************
+  76               	;                                          PUBLIC DECLARATIONS
+  77               	;**************************************************************************************************
+  78               	
+  79               	                .global OSStartHighRdy
+  80               	                .global OSCtxSw
+  81               	                .global OSIntCtxSw
+  82               	                .global	OSTickISR
+  83               	
+  84               	;**************************************************************************************************
+  85               	;                                         EXTERNAL DECLARATIONS
+  86               	;**************************************************************************************************
+  87               	
+  88               	                .extern	OSIntExit
+  89               	                .extern	OSIntNesting
+  90               	                .extern	OSPrioCur
+  91               	                .extern	OSPrioHighRdy
+  92               	                .extern	OSRunning
+  93               	#if OS_TASK_SW_HOOK_EN > 0
+  94               	                .extern	OSTaskSwHook
+  95               	#endif
+  96               	                .extern	OSTCBCur
+  97               	                .extern	OSTCBHighRdy
+  98               	                .extern	OSTimeTick
+  99               	
+ 100               	;**************************************************************************************************
+ 101               	;                                         MACROS
+ 102               	;**************************************************************************************************
+ 103               	
+ 104               	; Push all registers and the status register	
+ 105               	.macro	PUSHRS
+ 106               	
+ 107               	                push	r0
+ 108               	                push	r1
+ 109               	                push	r2
+ 110               	                push	r3
+ 111               	                push	r4
+ 112               	                push	r5
+ 113               	                push	r6
+ 114               	                push	r7
+ 115               	                push	r8
+ 116               	                push	r9
+ 117               	                push	r10
+ 118               	                push	r11
+ 119               	                push	r12
+ 120               	                push	r13
+ 121               	                push	r14
+ 122               	                push	r15
+ 123               	                push	r16
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 13
+
+
+ 124               	                push	r17
+ 125               	                push	r18
+ 126               	                push	r19
+ 127               	                push	r20
+ 128               	                push	r21
+ 129               	                push	r22
+ 130               	                push	r23
+ 131               	                push	r24
+ 132               	                push	r25
+ 133               	                push	r26
+ 134               	                push	r27
+ 135               	                push	r28
+ 136               	                push	r29
+ 137               	                push	r30
+ 138               	                push	r31
+ 139               	#ifdef RAMPZ
+ 140               	                in      r16,_SFR_IO_ADDR(RAMPZ)
+ 141               	                push	r16
+ 142               	#endif
+ 143               	.endm
+ 144               	
+ 145               	; Pop all registers and the status registers
+ 146               	.macro	POPRS
+ 147               	
+ 148               	#ifdef RAMPZ
+ 149               	                pop     r16
+ 150               	                out     _SFR_IO_ADDR(RAMPZ),r16
+ 151               	#endif
+ 152               	                pop     r31
+ 153               	                pop     r30
+ 154               	                pop     r29
+ 155               	                pop     r28
+ 156               	                pop     r27
+ 157               	                pop     r26
+ 158               	                pop     r25
+ 159               	                pop     r24
+ 160               	                pop     r23
+ 161               	                pop     r22
+ 162               	                pop     r21
+ 163               	                pop     r20
+ 164               	                pop     r19
+ 165               	                pop     r18
+ 166               	                pop     r17
+ 167               	                pop     r16
+ 168               	                pop     r15
+ 169               	                pop     r14
+ 170               	                pop     r13
+ 171               	                pop     r12
+ 172               	                pop     r11
+ 173               	                pop     r10
+ 174               	                pop     r9
+ 175               	                pop     r8
+ 176               	                pop     r7
+ 177               	                pop     r6
+ 178               	                pop     r5
+ 179               	                pop     r4
+ 180               	                pop     r3
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 14
+
+
+ 181               	                pop     r2
+ 182               	                pop     r1
+ 183               	                pop     r0
+ 184               	
+ 185               	.endm
+ 186               	
+ 187               	.macro	POPSREG
+ 188               	
+ 189               	                pop     r16
+ 190               	                out     _SFR_IO_ADDR(SREG),r16
+ 191               	
+ 192               	.endm
+ 193               	
+ 194               	.macro	PUSHSREG
+ 195               	
+ 196               	                in      r16,_SFR_IO_ADDR(SREG)
+ 197               	                push	r16
+ 198               	
+ 199               	.endm
+ 200               	
+ 201               	.macro	PUSHSREGISR
+ 202               	
+ 203               	                in      r16,_SFR_IO_ADDR(SREG)
+ 204               	                sbr     r16,0x80
+ 205               	                push	r16
+ 206               	
+ 207               	.endm
+ 208               	
+ 209               	
+ 210               	                	.text
+ 211               	                	.section	.text
+ 212               				
+ 213               	
+ 214               	;**************************************************************************************************
+ 215               	;                               START HIGHEST PRIORITY TASK READY-TO-RUN
+ 216               	;
+ 217               	; Description : This function is called by OSStart() to start the highest priority task that was cr
+ 218               	;               by your application before calling OSStart().
+ 219               	;
+ 220               	; Note(s)     : 1) The (data)stack frame is assumed to look as follows:
+ 221               	;
+ 222               	;                  OSTCBHighRdy->OSTCBStkPtr --> LSB of (return) stack pointer           (Low memor
+ 223               	;                                                SPH of (return) stack pointer
+ 224               	;                                                Flags to load in status register
+ 225               	;                                                R31
+ 226               	;                                                R30
+ 227               	;                                                R7
+ 228               	;                                                .
+ 229               	;                                                .
+ 230               	;                                                .
+ 231               	;                                                R0
+ 232               	;                                                PCH
+ 233               	;                                                PCL                                     (High memo
+ 234               	;
+ 235               	;                  where the stack pointer points to the task start address.
+ 236               	;
+ 237               	;
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 15
+
+
+ 238               	;               2) OSStartHighRdy() MUST:
+ 239               	;                      a) Call OSTaskSwHook() then,
+ 240               	;                      b) Set OSRunning to TRUE,
+ 241               	;                      c) Switch to the highest priority task.
+ 242               	;**************************************************************************************************
+ 243               	
+ 244               	OSStartHighRdy: 
+ 245               	#if OS_TASK_SW_HOOK_EN > 0
+ 246:c:/lab2/ports/os_cpu_a.asm **** 	        call    OSTaskSwHook                ; Invoke user defined context switch hook
+ 247               	#endif
+ 248:c:/lab2/ports/os_cpu_a.asm ****                 lds     R16,OSRunning               ; Indicate that we are multitasking
+ 249:c:/lab2/ports/os_cpu_a.asm ****                 inc     R16                         ;
+ 250:c:/lab2/ports/os_cpu_a.asm ****                 sts     OSRunning,R16               ;
+ 251               	
+ 252:c:/lab2/ports/os_cpu_a.asm ****                 lds     R30,OSTCBHighRdy            ; Let Z point to TCB of highest priority task
+ 253:c:/lab2/ports/os_cpu_a.asm ****                 lds     R31,OSTCBHighRdy+1          ; ready to run
+ 254               	
+ 255:c:/lab2/ports/os_cpu_a.asm ****                 ld      R28,Z+                      ; Load stack L pointer
+ 256:c:/lab2/ports/os_cpu_a.asm ****                 out     _SFR_IO_ADDR(SPL),R28
+ 257:c:/lab2/ports/os_cpu_a.asm ****                 ld      R29,Z+                      ;
+ 258:c:/lab2/ports/os_cpu_a.asm ****                 out     _SFR_IO_ADDR(SPH),R29
+ 259               	
+ 260:c:/lab2/ports/os_cpu_a.asm ****                 POPSREG                             ; Pop the status register
+ 260               	> 
+ 260 001e 0F91      	> pop r16
+ 260 0020 0FBF      	> out ((((0x3F)+0x20))-0x20),r16
+ 260               	> 
+ 261:c:/lab2/ports/os_cpu_a.asm ****                 POPRS                               ; Pop all registers
+ 261               	> 
+ 261               	> 
+ 261 0022 0F91      	> pop r16
+ 261 0024 0BBF      	> out ((((0x3B)+0x20))-0x20),r16
+ 261               	> 
+ 261 0026 FF91      	> pop r31
+ 261 0028 EF91      	> pop r30
+ 261 002a DF91      	> pop r29
+ 261 002c CF91      	> pop r28
+ 261 002e BF91      	> pop r27
+ 261 0030 AF91      	> pop r26
+ 261 0032 9F91      	> pop r25
+ 261 0034 8F91      	> pop r24
+ 261 0036 7F91      	> pop r23
+ 261 0038 6F91      	> pop r22
+ 261 003a 5F91      	> pop r21
+ 261 003c 4F91      	> pop r20
+ 261 003e 3F91      	> pop r19
+ 261 0040 2F91      	> pop r18
+ 261 0042 1F91      	> pop r17
+ 261 0044 0F91      	> pop r16
+ 261 0046 FF90      	> pop r15
+ 261 0048 EF90      	> pop r14
+ 261 004a DF90      	> pop r13
+ 261 004c CF90      	> pop r12
+ 261 004e BF90      	> pop r11
+ 261 0050 AF90      	> pop r10
+ 261 0052 9F90      	> pop r9
+ 261 0054 8F90      	> pop r8
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 16
+
+
+ 261 0056 7F90      	> pop r7
+ 261 0058 6F90      	> pop r6
+ 261 005a 5F90      	> pop r5
+ 261 005c 4F90      	> pop r4
+ 261 005e 3F90      	> pop r3
+ 261 0060 2F90      	> pop r2
+ 261 0062 1F90      	> pop r1
+ 261 0064 0F90      	> pop r0
+ 261               	> 
+ 262:c:/lab2/ports/os_cpu_a.asm ****                 ret                                 ; Start task
+ 263               	
+ 264               	;**************************************************************************************************
+ 265               	;                                       TASK LEVEL CONTEXT SWITCH
+ 266               	;
+ 267               	; Description : This function is called when a task makes a higher priority task ready-to-run.
+ 268               	;
+ 269               	; Note(s)     : 1) Upon entry,
+ 270               	;                  OSTCBCur     points to the OS_TCB of the task to suspend
+ 271               	;                  OSTCBHighRdy points to the OS_TCB of the task to resume
+ 272               	;
+ 273               	;               2) The stack frame of the task to suspend looks as follows:
+ 274               	;
+ 275               	;                                       SP+0 --> LSB of task code address
+ 276               	;                                         +1     MSB of task code address                (High memo
+ 277               	;
+ 278               	;               3) The saved context of the task to resume looks as follows:
+ 279               	;
+ 280               	;                  OSTCBHighRdy->OSTCBStkPtr --> Flags to load in status register (Low memory)
+ 281               	;                                                R31
+ 282               	;                                                R30
+ 283               	;                                                R7
+ 284               	;                                                .
+ 285               	;                                                .
+ 286               	;                                                .
+ 287               	;                                                R0
+ 288               	;                                                PCH
+ 289               	;                                                PCL                                     (High memo
+ 290               	;**************************************************************************************************
+ 291               	
+ 292:c:/lab2/ports/os_cpu_a.asm **** OSCtxSw:        PUSHRS                              ; Save current tasks context
+ 292               	> 
+ 292 0068 0F92      	> push r0
+ 292 006a 1F92      	> push r1
+ 292 006c 2F92      	> push r2
+ 292 006e 3F92      	> push r3
+ 292 0070 4F92      	> push r4
+ 292 0072 5F92      	> push r5
+ 292 0074 6F92      	> push r6
+ 292 0076 7F92      	> push r7
+ 292 0078 8F92      	> push r8
+ 292 007a 9F92      	> push r9
+ 292 007c AF92      	> push r10
+ 292 007e BF92      	> push r11
+ 292 0080 CF92      	> push r12
+ 292 0082 DF92      	> push r13
+ 292 0084 EF92      	> push r14
+ 292 0086 FF92      	> push r15
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 17
+
+
+ 292 0088 0F93      	> push r16
+ 292 008a 1F93      	> push r17
+ 292 008c 2F93      	> push r18
+ 292 008e 3F93      	> push r19
+ 292 0090 4F93      	> push r20
+ 292 0092 5F93      	> push r21
+ 292 0094 6F93      	> push r22
+ 292 0096 7F93      	> push r23
+ 292 0098 8F93      	> push r24
+ 292 009a 9F93      	> push r25
+ 292 009c AF93      	> push r26
+ 292 009e BF93      	> push r27
+ 292 00a0 CF93      	> push r28
+ 292 00a2 DF93      	> push r29
+ 292 00a4 EF93      	> push r30
+ 292 00a6 FF93      	> push r31
+ 292               	> 
+ 292 00a8 0BB7      	> in r16,((((0x3B)+0x20))-0x20)
+ 292 00aa 0F93      	> push r16
+ 292               	> 
+ 293:c:/lab2/ports/os_cpu_a.asm ****                 PUSHSREG                            ; Save SREG
+ 293               	> 
+ 293 00ac 0FB7      	> in r16,((((0x3F)+0x20))-0x20)
+ 293 00ae 0F93      	> push r16
+ 293               	> 
+ 294               	
+ 295:c:/lab2/ports/os_cpu_a.asm ****                 lds     R30,OSTCBCur                ; Z = OSTCBCur->OSTCBStkPtr
+ 296:c:/lab2/ports/os_cpu_a.asm ****                 lds     R31,OSTCBCur+1              ;
+ 297               	
+ 298:c:/lab2/ports/os_cpu_a.asm ****                 in      r28,_SFR_IO_ADDR(SPL)
+ 299:c:/lab2/ports/os_cpu_a.asm ****                 st      Z+,R28                      ; Save Y (R29:R28) pointer
+ 300:c:/lab2/ports/os_cpu_a.asm ****                 in      r29,_SFR_IO_ADDR(SPH)
+ 301:c:/lab2/ports/os_cpu_a.asm ****                 st      Z+,R29                      ;
+ 302               	
+ 303               	#if OS_TASK_SW_HOOK_EN > 0
+ 304:c:/lab2/ports/os_cpu_a.asm ****                 call    OSTaskSwHook                ; Call user defined task switch hook
+ 305               	#endif
+ 306               	
+ 307:c:/lab2/ports/os_cpu_a.asm ****                 lds     R16,OSPrioHighRdy           ; OSPrioCur = OSPrioHighRdy
+ 308:c:/lab2/ports/os_cpu_a.asm ****                 sts     OSPrioCur,R16
+ 309               	
+ 310:c:/lab2/ports/os_cpu_a.asm ****                 lds     R30,OSTCBHighRdy            ; Let Z point to TCB of highest priority task
+ 311:c:/lab2/ports/os_cpu_a.asm ****                 lds     R31,OSTCBHighRdy+1          ; ready to run
+ 312:c:/lab2/ports/os_cpu_a.asm ****                 sts     OSTCBCur,R30                ; OSTCBCur = OSTCBHighRdy
+ 313:c:/lab2/ports/os_cpu_a.asm ****                 sts     OSTCBCur+1,R31              ;
+ 314               	
+ 315:c:/lab2/ports/os_cpu_a.asm ****                 ld      R28,Z+                      ; Restore Y pointer
+ 316:c:/lab2/ports/os_cpu_a.asm ****                 out     _SFR_IO_ADDR(SPL),R28
+ 317:c:/lab2/ports/os_cpu_a.asm ****                 ld      R29,Z+                      ;
+ 318:c:/lab2/ports/os_cpu_a.asm ****                 out     _SFR_IO_ADDR(SPH),R29
+ 319               	
+ 320:c:/lab2/ports/os_cpu_a.asm ****                 POPSREG                             ; Restore the status register
+ 320               	> 
+ 320 00e4 0F91      	> pop r16
+ 320 00e6 0FBF      	> out ((((0x3F)+0x20))-0x20),r16
+ 320               	> 
+ 321:c:/lab2/ports/os_cpu_a.asm ****                 POPRS                               ; Restore all registers
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 18
+
+
+ 321               	> 
+ 321               	> 
+ 321 00e8 0F91      	> pop r16
+ 321 00ea 0BBF      	> out ((((0x3B)+0x20))-0x20),r16
+ 321               	> 
+ 321 00ec FF91      	> pop r31
+ 321 00ee EF91      	> pop r30
+ 321 00f0 DF91      	> pop r29
+ 321 00f2 CF91      	> pop r28
+ 321 00f4 BF91      	> pop r27
+ 321 00f6 AF91      	> pop r26
+ 321 00f8 9F91      	> pop r25
+ 321 00fa 8F91      	> pop r24
+ 321 00fc 7F91      	> pop r23
+ 321 00fe 6F91      	> pop r22
+ 321 0100 5F91      	> pop r21
+ 321 0102 4F91      	> pop r20
+ 321 0104 3F91      	> pop r19
+ 321 0106 2F91      	> pop r18
+ 321 0108 1F91      	> pop r17
+ 321 010a 0F91      	> pop r16
+ 321 010c FF90      	> pop r15
+ 321 010e EF90      	> pop r14
+ 321 0110 DF90      	> pop r13
+ 321 0112 CF90      	> pop r12
+ 321 0114 BF90      	> pop r11
+ 321 0116 AF90      	> pop r10
+ 321 0118 9F90      	> pop r9
+ 321 011a 8F90      	> pop r8
+ 321 011c 7F90      	> pop r7
+ 321 011e 6F90      	> pop r6
+ 321 0120 5F90      	> pop r5
+ 321 0122 4F90      	> pop r4
+ 321 0124 3F90      	> pop r3
+ 321 0126 2F90      	> pop r2
+ 321 0128 1F90      	> pop r1
+ 321 012a 0F90      	> pop r0
+ 321               	> 
+ 322:c:/lab2/ports/os_cpu_a.asm ****                 ret
+ 323               	
+ 324               	
+ 325               	;**************************************************************************************************
+ 326               	;                                INTERRUPT LEVEL CONTEXT SWITCH
+ 327               	;
+ 328               	; Description : This function is called by OSIntExit() to perform a context switch to a task that h
+ 329               	;               been made ready-to-run by an ISR.
+ 330               	;
+ 331               	; Note(s)     : 1) Upon entry,
+ 332               	;                  OSTCBCur     points to the OS_TCB of the task to suspend
+ 333               	;                  OSTCBHighRdy points to the OS_TCB of the task to resume
+ 334               	;
+ 335               	;               2) The stack frame of the task to suspend looks as follows:
+ 336               	;
+ 337               	;                  OSTCBCur->OSTCBStkPtr ------> Flags to load in status register        (Low memor
+ 338               	;                                                R31
+ 339               	;                                                R30
+ 340               	;                                                R27
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 19
+
+
+ 341               	;                                                .
+ 342               	;                                                .
+ 343               	;                                                R0
+ 344               	;                                                PCH
+ 345               	;                                                PCL                                     (High memo
+ 346               	;
+ 347               	;               3) The saved context of the task to resume looks as follows:
+ 348               	;
+ 349               	;                  OSTCBHighRdy->OSTCBStkPtr --> Flags to load in status register         (Low memo
+ 350               	;                                                R31
+ 351               	;                                                R30
+ 352               	;                                                R7
+ 353               	;                                                .
+ 354               	;                                                .
+ 355               	;                                                .
+ 356               	;                                                R0                                      (High memo
+ 357               	;**************************************************************************************************
+ 358               	
+ 359               	OSIntCtxSw:     
+ 360               	;**************************************************************************************************
+ 361               	; You should enable the lines between #if 0 and #endif only if you use uC/OS-II version 2.51 or bel
+ 362               	; (Unfortunately OS_VERSION is not defined here (how to do it elegantly?)
+ 363               	;**************************************************************************************************
+ 364               	#if 0
+ 365               	                in      R28,_SFR_IO_ADDR(SPL)       ; Z = SP
+ 366               	                in      R29,_SFR_IO_ADDR(SPH)
+ 367               	
+ 368               	#if      OS_CRITICAL_METHOD == 1
+ 369               	                adiw    R28,4                       ; Use if OS_CRITICAL_METHOD is 1, see OS_CPU.H
+ 370               	#endif
+ 371               	#if      OS_CRITICAL_METHOD == 2
+ 372               	                adiw    R28,5                       ; Use if OS_CRITICAL_METHOD is 2, see OS_CPU.H
+ 373               	#endif
+ 374               	
+ 375               	                lds     R30,OSTCBCur                ; Z = OSTCBCur->OSTCBStkPtr
+ 376               	                lds     R31,OSTCBCur+1              ;
+ 377               	                st      Z+,R28                      ; Save Y pointer
+ 378               	                st      Z+,R29                      ;
+ 379               	#endif
+ 380               	;**************************************************************************************************
+ 381               	
+ 382               	#if OS_TASK_SW_HOOK_EN > 0
+ 383:c:/lab2/ports/os_cpu_a.asm ****                 call    OSTaskSwHook                ; Call user defined task switch hook
+ 384               	#endif
+ 385:c:/lab2/ports/os_cpu_a.asm ****                 lds     R16,OSPrioHighRdy           ; OSPrioCur = OSPrioHighRdy
+ 386:c:/lab2/ports/os_cpu_a.asm ****                 sts     OSPrioCur,R16               ;
+ 387               	
+ 388:c:/lab2/ports/os_cpu_a.asm ****                 lds     R30,OSTCBHighRdy            ; Z = OSTCBHighRdy->OSTCBStkPtr
+ 389:c:/lab2/ports/os_cpu_a.asm ****                 lds     R31,OSTCBHighRdy+1          ;
+ 390:c:/lab2/ports/os_cpu_a.asm ****                 sts     OSTCBCur,R30                ; OSTCBCur = OSTCBHighRdy
+ 391:c:/lab2/ports/os_cpu_a.asm ****                 sts     OSTCBCur+1,R31              ;
+ 392               	
+ 393:c:/lab2/ports/os_cpu_a.asm ****                 ld      R28,Z+                      ; Restore Y pointer
+ 394:c:/lab2/ports/os_cpu_a.asm ****                 out     _SFR_IO_ADDR(SPL),R28
+ 395:c:/lab2/ports/os_cpu_a.asm ****                 ld      R29,Z+                      ;
+ 396:c:/lab2/ports/os_cpu_a.asm ****                 out     _SFR_IO_ADDR(SPH),R29
+ 397               	
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 20
+
+
+ 398:c:/lab2/ports/os_cpu_a.asm ****                 POPSREG                             ; Restore the status register
+ 398               	> 
+ 398 0152 0F91      	> pop r16
+ 398 0154 0FBF      	> out ((((0x3F)+0x20))-0x20),r16
+ 398               	> 
+ 399:c:/lab2/ports/os_cpu_a.asm ****                 POPRS                               ; Restore all registers
+ 399               	> 
+ 399               	> 
+ 399 0156 0F91      	> pop r16
+ 399 0158 0BBF      	> out ((((0x3B)+0x20))-0x20),r16
+ 399               	> 
+ 399 015a FF91      	> pop r31
+ 399 015c EF91      	> pop r30
+ 399 015e DF91      	> pop r29
+ 399 0160 CF91      	> pop r28
+ 399 0162 BF91      	> pop r27
+ 399 0164 AF91      	> pop r26
+ 399 0166 9F91      	> pop r25
+ 399 0168 8F91      	> pop r24
+ 399 016a 7F91      	> pop r23
+ 399 016c 6F91      	> pop r22
+ 399 016e 5F91      	> pop r21
+ 399 0170 4F91      	> pop r20
+ 399 0172 3F91      	> pop r19
+ 399 0174 2F91      	> pop r18
+ 399 0176 1F91      	> pop r17
+ 399 0178 0F91      	> pop r16
+ 399 017a FF90      	> pop r15
+ 399 017c EF90      	> pop r14
+ 399 017e DF90      	> pop r13
+ 399 0180 CF90      	> pop r12
+ 399 0182 BF90      	> pop r11
+ 399 0184 AF90      	> pop r10
+ 399 0186 9F90      	> pop r9
+ 399 0188 8F90      	> pop r8
+ 399 018a 7F90      	> pop r7
+ 399 018c 6F90      	> pop r6
+ 399 018e 5F90      	> pop r5
+ 399 0190 4F90      	> pop r4
+ 399 0192 3F90      	> pop r3
+ 399 0194 2F90      	> pop r2
+ 399 0196 1F90      	> pop r1
+ 399 0198 0F90      	> pop r0
+ 399               	> 
+ 400:c:/lab2/ports/os_cpu_a.asm ****                 ret
+ 401               	
+ 402               	;**************************************************************************************************
+ 403               	;                                           SYSTEM TICK ISR
+ 404               	;
+ 405               	; Description : This function is the ISR used to notify uC/OS-II that a system tick has occurred.
+ 406               	;
+ 407               	; (Julius Luukko/2003-02-14): Changed the name of vector to SIG_OVERFLOW0. In order to the correspo
+ 408               	; interrupt vector to be set to point to SIG_OVERFLOW0, one has to also #include <avr/io.h> in this
+ 409               	; Note that no error message or warning will be given, if the include is not present, the interupt 
+ 410               	; won't get vectored.
+ 411               	;
+ 412               	;**************************************************************************************************
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 21
+
+
+ 413               	.global	SIG_OVERFLOW0
+ 414               	SIG_OVERFLOW0:
+ 415:c:/lab2/ports/os_cpu_a.asm **** OSTickISR:      PUSHRS                              ; Save all registers
+ 415               	> 
+ 415 019c 0F92      	> push r0
+ 415 019e 1F92      	> push r1
+ 415 01a0 2F92      	> push r2
+ 415 01a2 3F92      	> push r3
+ 415 01a4 4F92      	> push r4
+ 415 01a6 5F92      	> push r5
+ 415 01a8 6F92      	> push r6
+ 415 01aa 7F92      	> push r7
+ 415 01ac 8F92      	> push r8
+ 415 01ae 9F92      	> push r9
+ 415 01b0 AF92      	> push r10
+ 415 01b2 BF92      	> push r11
+ 415 01b4 CF92      	> push r12
+ 415 01b6 DF92      	> push r13
+ 415 01b8 EF92      	> push r14
+ 415 01ba FF92      	> push r15
+ 415 01bc 0F93      	> push r16
+ 415 01be 1F93      	> push r17
+ 415 01c0 2F93      	> push r18
+ 415 01c2 3F93      	> push r19
+ 415 01c4 4F93      	> push r20
+ 415 01c6 5F93      	> push r21
+ 415 01c8 6F93      	> push r22
+ 415 01ca 7F93      	> push r23
+ 415 01cc 8F93      	> push r24
+ 415 01ce 9F93      	> push r25
+ 415 01d0 AF93      	> push r26
+ 415 01d2 BF93      	> push r27
+ 415 01d4 CF93      	> push r28
+ 415 01d6 DF93      	> push r29
+ 415 01d8 EF93      	> push r30
+ 415 01da FF93      	> push r31
+ 415               	> 
+ 415 01dc 0BB7      	> in r16,((((0x3B)+0x20))-0x20)
+ 415 01de 0F93      	> push r16
+ 415               	> 
+ 416:c:/lab2/ports/os_cpu_a.asm ****                 PUSHSREGISR                         ; Save SREG with I bit set!
+ 416               	> 
+ 416 01e0 0FB7      	> in r16,((((0x3F)+0x20))-0x20)
+ 416 01e2 0068      	> sbr r16,0x80
+ 416 01e4 0F93      	> push r16
+ 416               	> 
+ 417               	
+ 418:c:/lab2/ports/os_cpu_a.asm ****                 lds     R16,OSIntNesting            ; Notify uC/OS-II of ISR
+ 419:c:/lab2/ports/os_cpu_a.asm ****                 inc     R16                         ;
+ 420:c:/lab2/ports/os_cpu_a.asm ****                 sts     OSIntNesting,R16            ;
+ 421               	                
+ 422               	;**************************************************************************************************
+ 423               	; You should disable the lines between #if 1 and #endif if you use uC/OS-II version 2.51 or below!
+ 424               	; (Unfortunately OS_VERSION is not defined here (how to do it elegantly? On possibility would be to
+ 425               	;  code this ISR with C in os_cpu_c.c or use inline assembler in os_cpu_c.c)
+ 426               	;**************************************************************************************************
+ 427               	#if 1
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 22
+
+
+ 428:c:/lab2/ports/os_cpu_a.asm ****                 cpi     R16,0x01
+ 429:c:/lab2/ports/os_cpu_a.asm ****                 brne    _not_first_int
+ 430               	
+ 431:c:/lab2/ports/os_cpu_a.asm ****                 in      R28,_SFR_IO_ADDR(SPL)       ; Z = SP
+ 432:c:/lab2/ports/os_cpu_a.asm ****                 in      R29,_SFR_IO_ADDR(SPH)
+ 433:c:/lab2/ports/os_cpu_a.asm ****                 lds     R30,OSTCBCur                ; Z = OSTCBCur->OSTCBStkPtr
+ 434:c:/lab2/ports/os_cpu_a.asm ****                 lds     R31,OSTCBCur+1              ;
+ 435:c:/lab2/ports/os_cpu_a.asm ****                 st      Z+,R28                      ; Save Y pointer
+ 436:c:/lab2/ports/os_cpu_a.asm ****                 st      Z+,R29                      ;
+ 437               	_not_first_int:
+ 438               	#endif
+ 439:c:/lab2/ports/os_cpu_a.asm ****                 ldi     R16,256-(CPU_CLOCK_HZ/OS_TICKS_PER_SEC/1024)   
+ 440               	                                                    ; Reload timer to overflow at a rate of OS_TICK
+ 441:c:/lab2/ports/os_cpu_a.asm ****                 out     _SFR_IO_ADDR(TCNT0),R16     ; at a prescaler of 1024 and CPU_CLOCK_HZ AVR c
+ 442               		
+ 443:c:/lab2/ports/os_cpu_a.asm ****                 sei                                 ; Enable interrupts
+ 444               	                
+ 445:c:/lab2/ports/os_cpu_a.asm ****                 call    OSTimeTick                  ; Call uC/OS-IIs tick updating function
+ 446:c:/lab2/ports/os_cpu_a.asm ****                 nop
+ 447:c:/lab2/ports/os_cpu_a.asm ****                 call    OSIntExit                   ; Notify uC/OS-II about end of ISR
+ 448               	
+ 449:c:/lab2/ports/os_cpu_a.asm ****                 POPSREG
+ 449               	> 
+ 449 0214 0F91      	> pop r16
+ 449 0216 0FBF      	> out ((((0x3F)+0x20))-0x20),r16
+ 449               	> 
+ 450:c:/lab2/ports/os_cpu_a.asm ****                 POPRS                               ; Restore all registers and status register
+ 450               	> 
+ 450               	> 
+ 450 0218 0F91      	> pop r16
+ 450 021a 0BBF      	> out ((((0x3B)+0x20))-0x20),r16
+ 450               	> 
+ 450 021c FF91      	> pop r31
+ 450 021e EF91      	> pop r30
+ 450 0220 DF91      	> pop r29
+ 450 0222 CF91      	> pop r28
+ 450 0224 BF91      	> pop r27
+ 450 0226 AF91      	> pop r26
+ 450 0228 9F91      	> pop r25
+ 450 022a 8F91      	> pop r24
+ 450 022c 7F91      	> pop r23
+ 450 022e 6F91      	> pop r22
+ 450 0230 5F91      	> pop r21
+ 450 0232 4F91      	> pop r20
+ 450 0234 3F91      	> pop r19
+ 450 0236 2F91      	> pop r18
+ 450 0238 1F91      	> pop r17
+ 450 023a 0F91      	> pop r16
+ 450 023c FF90      	> pop r15
+ 450 023e EF90      	> pop r14
+ 450 0240 DF90      	> pop r13
+ 450 0242 CF90      	> pop r12
+ 450 0244 BF90      	> pop r11
+ 450 0246 AF90      	> pop r10
+ 450 0248 9F90      	> pop r9
+ 450 024a 8F90      	> pop r8
+ 450 024c 7F90      	> pop r7
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 23
+
+
+ 450 024e 6F90      	> pop r6
+ 450 0250 5F90      	> pop r5
+ 450 0252 4F90      	> pop r4
+ 450 0254 3F90      	> pop r3
+ 450 0256 2F90      	> pop r2
+ 450 0258 1F90      	> pop r1
+ 450 025a 0F90      	> pop r0
+ 450               	> 
+ 451:c:/lab2/ports/os_cpu_a.asm ****                 ret                                 ; Note: RET instead of RETI
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc5XYPLa.s 			page 24
+
+
+DEFINED SYMBOLS
+c:/lab2/ports/os_cpu_a.asm:244    .text:00000000 OSStartHighRdy
+c:/lab2/ports/os_cpu_a.asm:292    .text:00000068 OSCtxSw
+c:/lab2/ports/os_cpu_a.asm:359    .text:0000012e OSIntCtxSw
+c:/lab2/ports/os_cpu_a.asm:415    .text:0000019c OSTickISR
+c:/lab2/ports/os_cpu_a.asm:414    .text:0000019c __vector_16
+c:/lab2/ports/os_cpu_a.asm:437    .text:00000204 _not_first_int
+
+UNDEFINED SYMBOLS
+OSTaskSwHook
+OSRunning
+OSTCBHighRdy
+OSTCBCur
+OSPrioHighRdy
+OSPrioCur
+OSIntNesting
+OSTimeTick
+OSIntExit

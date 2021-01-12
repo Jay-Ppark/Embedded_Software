@@ -1,0 +1,160 @@
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccynmOnY.s 			page 1
+
+
+   1               		.file	"os_cpu_c.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__  = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.text
+   9               	.global	OSTaskStkInit
+  10               		.type	OSTaskStkInit, @function
+  11               	OSTaskStkInit:
+  12               	/* prologue: function */
+  13               	/* frame size = 0 */
+  14 0000 FA01      		movw r30,r20
+  15 0002 8083      		st Z,r24
+  16 0004 9293      		st -Z,r25
+  17 0006 1292      		st -Z,__zero_reg__
+  18 0008 1292      		st -Z,__zero_reg__
+  19 000a 1292      		st -Z,__zero_reg__
+  20 000c 1292      		st -Z,__zero_reg__
+  21 000e 1292      		st -Z,__zero_reg__
+  22 0010 1292      		st -Z,__zero_reg__
+  23 0012 1292      		st -Z,__zero_reg__
+  24 0014 1292      		st -Z,__zero_reg__
+  25 0016 1292      		st -Z,__zero_reg__
+  26 0018 1292      		st -Z,__zero_reg__
+  27 001a 1292      		st -Z,__zero_reg__
+  28 001c 1292      		st -Z,__zero_reg__
+  29 001e 1292      		st -Z,__zero_reg__
+  30 0020 1292      		st -Z,__zero_reg__
+  31 0022 1292      		st -Z,__zero_reg__
+  32 0024 1292      		st -Z,__zero_reg__
+  33 0026 1292      		st -Z,__zero_reg__
+  34 0028 1292      		st -Z,__zero_reg__
+  35 002a 1292      		st -Z,__zero_reg__
+  36 002c 1292      		st -Z,__zero_reg__
+  37 002e 1292      		st -Z,__zero_reg__
+  38 0030 1292      		st -Z,__zero_reg__
+  39 0032 1292      		st -Z,__zero_reg__
+  40 0034 1292      		st -Z,__zero_reg__
+  41 0036 6293      		st -Z,r22
+  42 0038 7293      		st -Z,r23
+  43 003a 1292      		st -Z,__zero_reg__
+  44 003c 1292      		st -Z,__zero_reg__
+  45 003e 1292      		st -Z,__zero_reg__
+  46 0040 1292      		st -Z,__zero_reg__
+  47 0042 1292      		st -Z,__zero_reg__
+  48 0044 1292      		st -Z,__zero_reg__
+  49 0046 1292      		st -Z,__zero_reg__
+  50 0048 80E8      		ldi r24,lo8(-128)
+  51 004a 8293      		st -Z,r24
+  52 004c 3197      		sbiw r30,1
+  53 004e CF01      		movw r24,r30
+  54               	/* epilogue start */
+  55 0050 0895      		ret
+  56               		.size	OSTaskStkInit, .-OSTaskStkInit
+  57               	.global	OSTaskCreateHook
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccynmOnY.s 			page 2
+
+
+  58               		.type	OSTaskCreateHook, @function
+  59               	OSTaskCreateHook:
+  60               	/* prologue: function */
+  61               	/* frame size = 0 */
+  62               	/* epilogue start */
+  63 0052 0895      		ret
+  64               		.size	OSTaskCreateHook, .-OSTaskCreateHook
+  65               	.global	OSTaskDelHook
+  66               		.type	OSTaskDelHook, @function
+  67               	OSTaskDelHook:
+  68               	/* prologue: function */
+  69               	/* frame size = 0 */
+  70               	/* epilogue start */
+  71 0054 0895      		ret
+  72               		.size	OSTaskDelHook, .-OSTaskDelHook
+  73               	.global	OSTaskSwHook
+  74               		.type	OSTaskSwHook, @function
+  75               	OSTaskSwHook:
+  76               	/* prologue: function */
+  77               	/* frame size = 0 */
+  78               	/* epilogue start */
+  79 0056 0895      		ret
+  80               		.size	OSTaskSwHook, .-OSTaskSwHook
+  81               	.global	OSTaskStatHook
+  82               		.type	OSTaskStatHook, @function
+  83               	OSTaskStatHook:
+  84               	/* prologue: function */
+  85               	/* frame size = 0 */
+  86               	/* epilogue start */
+  87 0058 0895      		ret
+  88               		.size	OSTaskStatHook, .-OSTaskStatHook
+  89               	.global	OSTimeTickHook
+  90               		.type	OSTimeTickHook, @function
+  91               	OSTimeTickHook:
+  92               	/* prologue: function */
+  93               	/* frame size = 0 */
+  94               	/* epilogue start */
+  95 005a 0895      		ret
+  96               		.size	OSTimeTickHook, .-OSTimeTickHook
+  97               	.global	OSInitHookBegin
+  98               		.type	OSInitHookBegin, @function
+  99               	OSInitHookBegin:
+ 100               	/* prologue: function */
+ 101               	/* frame size = 0 */
+ 102               	/* epilogue start */
+ 103 005c 0895      		ret
+ 104               		.size	OSInitHookBegin, .-OSInitHookBegin
+ 105               	.global	OSInitHookEnd
+ 106               		.type	OSInitHookEnd, @function
+ 107               	OSInitHookEnd:
+ 108               	/* prologue: function */
+ 109               	/* frame size = 0 */
+ 110               	/* epilogue start */
+ 111 005e 0895      		ret
+ 112               		.size	OSInitHookEnd, .-OSInitHookEnd
+ 113               	.global	OSTaskIdleHook
+ 114               		.type	OSTaskIdleHook, @function
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccynmOnY.s 			page 3
+
+
+ 115               	OSTaskIdleHook:
+ 116               	/* prologue: function */
+ 117               	/* frame size = 0 */
+ 118               	/* epilogue start */
+ 119 0060 0895      		ret
+ 120               		.size	OSTaskIdleHook, .-OSTaskIdleHook
+ 121               	.global	OSTCBInitHook
+ 122               		.type	OSTCBInitHook, @function
+ 123               	OSTCBInitHook:
+ 124               	/* prologue: function */
+ 125               	/* frame size = 0 */
+ 126               	/* epilogue start */
+ 127 0062 0895      		ret
+ 128               		.size	OSTCBInitHook, .-OSTCBInitHook
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccynmOnY.s 			page 4
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 os_cpu_c.c
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:2      *ABS*:0000003f __SREG__
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:3      *ABS*:0000003e __SP_H__
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:4      *ABS*:0000003d __SP_L__
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:5      *ABS*:00000034 __CCP__
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:6      *ABS*:00000000 __tmp_reg__
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:7      *ABS*:00000001 __zero_reg__
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:11     .text:00000000 OSTaskStkInit
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:59     .text:00000052 OSTaskCreateHook
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:67     .text:00000054 OSTaskDelHook
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:75     .text:00000056 OSTaskSwHook
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:83     .text:00000058 OSTaskStatHook
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:91     .text:0000005a OSTimeTickHook
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:99     .text:0000005c OSInitHookBegin
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:107    .text:0000005e OSInitHookEnd
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:115    .text:00000060 OSTaskIdleHook
+C:\Users\user\AppData\Local\Temp/ccynmOnY.s:123    .text:00000062 OSTCBInitHook
+
+NO UNDEFINED SYMBOLS

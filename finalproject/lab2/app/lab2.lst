@@ -1,0 +1,1333 @@
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 1
+
+
+   1               		.file	"lab2.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__  = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.text
+   9               	.global	__vector_6
+  10               		.type	__vector_6, @function
+  11               	__vector_6:
+  12 0000 1F92      		push __zero_reg__
+  13 0002 0F92      		push r0
+  14 0004 0FB6      		in r0,__SREG__
+  15 0006 0F92      		push r0
+  16 0008 1124      		clr __zero_reg__
+  17 000a 2F93      		push r18
+  18 000c 3F93      		push r19
+  19 000e 8F93      		push r24
+  20 0010 9F93      		push r25
+  21               	/* prologue: Signal */
+  22               	/* frame size = 0 */
+  23 0012 8091 0000 		lds r24,is_working
+  24 0016 9091 0000 		lds r25,(is_working)+1
+  25 001a 892B      		or r24,r25
+  26 001c 01F4      		brne .L3
+  27 001e 8091 0000 		lds r24,hope_temp
+  28 0022 9091 0000 		lds r25,(hope_temp)+1
+  29 0026 2091 0000 		lds r18,cur_temp
+  30 002a 3091 0000 		lds r19,(cur_temp)+1
+  31 002e 821B      		sub r24,r18
+  32 0030 930B      		sbc r25,r19
+  33 0032 1816      		cp __zero_reg__,r24
+  34 0034 1906      		cpc __zero_reg__,r25
+  35 0036 04F4      		brge .L3
+  36 0038 81E0      		ldi r24,lo8(1)
+  37 003a 90E0      		ldi r25,hi8(1)
+  38 003c 9093 0000 		sts (is_working)+1,r25
+  39 0040 8093 0000 		sts is_working,r24
+  40 0044 80E4      		ldi r24,lo8(-25536)
+  41 0046 9CE9      		ldi r25,hi8(-25536)
+  42               	/* #APP */
+  43               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+  44 0048 0197      		1: sbiw r24,1
+  45 004a 01F4      		brne 1b
+  46               	 ;  0 "" 2
+  47               	/* #NOAPP */
+  48               	.L3:
+  49               	/* epilogue start */
+  50 004c 9F91      		pop r25
+  51 004e 8F91      		pop r24
+  52 0050 3F91      		pop r19
+  53 0052 2F91      		pop r18
+  54 0054 0F90      		pop r0
+  55 0056 0FBE      		out __SREG__,r0
+  56 0058 0F90      		pop r0
+  57 005a 1F90      		pop __zero_reg__
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 2
+
+
+  58 005c 1895      		reti
+  59               		.size	__vector_6, .-__vector_6
+  60               	.global	write_twi_1byte_nopreset
+  61               		.type	write_twi_1byte_nopreset, @function
+  62               	write_twi_1byte_nopreset:
+  63               	/* prologue: function */
+  64               	/* frame size = 0 */
+  65 005e 982F      		mov r25,r24
+  66 0060 84EA      		ldi r24,lo8(-92)
+  67 0062 8093 7400 		sts 116,r24
+  68               	.L20:
+  69 0066 8091 7400 		lds r24,116
+  70 006a 87FF      		sbrs r24,7
+  71 006c 00C0      		rjmp .L20
+  72 006e 8091 7100 		lds r24,113
+  73 0072 887F      		andi r24,lo8(-8)
+  74 0074 8830      		cpi r24,lo8(8)
+  75 0076 01F0      		breq .L7
+  76 0078 8091 7100 		lds r24,113
+  77 007c 887F      		andi r24,lo8(-8)
+  78 007e 8031      		cpi r24,lo8(16)
+  79 0080 01F4      		brne .L20
+  80               	.L7:
+  81 0082 88E9      		ldi r24,lo8(-104)
+  82 0084 8093 7300 		sts 115,r24
+  83 0088 84E8      		ldi r24,lo8(-124)
+  84 008a 8093 7400 		sts 116,r24
+  85               	.L21:
+  86 008e 8091 7400 		lds r24,116
+  87 0092 87FF      		sbrs r24,7
+  88 0094 00C0      		rjmp .L21
+  89 0096 8091 7100 		lds r24,113
+  90 009a 887F      		andi r24,lo8(-8)
+  91 009c 8831      		cpi r24,lo8(24)
+  92 009e 01F4      		brne .L21
+  93 00a0 9093 7300 		sts 115,r25
+  94 00a4 84E8      		ldi r24,lo8(-124)
+  95 00a6 8093 7400 		sts 116,r24
+  96               	.L22:
+  97 00aa 8091 7400 		lds r24,116
+  98 00ae 87FF      		sbrs r24,7
+  99 00b0 00C0      		rjmp .L22
+ 100 00b2 8091 7100 		lds r24,113
+ 101 00b6 887F      		andi r24,lo8(-8)
+ 102 00b8 8832      		cpi r24,lo8(40)
+ 103 00ba 01F4      		brne .L22
+ 104 00bc 6093 7300 		sts 115,r22
+ 105 00c0 84E8      		ldi r24,lo8(-124)
+ 106 00c2 8093 7400 		sts 116,r24
+ 107               	.L23:
+ 108 00c6 8091 7400 		lds r24,116
+ 109 00ca 87FF      		sbrs r24,7
+ 110 00cc 00C0      		rjmp .L23
+ 111 00ce 8091 7100 		lds r24,113
+ 112 00d2 887F      		andi r24,lo8(-8)
+ 113 00d4 8832      		cpi r24,lo8(40)
+ 114 00d6 01F4      		brne .L23
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 3
+
+
+ 115 00d8 84E9      		ldi r24,lo8(-108)
+ 116 00da 8093 7400 		sts 116,r24
+ 117               	/* epilogue start */
+ 118 00de 0895      		ret
+ 119               		.size	write_twi_1byte_nopreset, .-write_twi_1byte_nopreset
+ 120               	.global	write_twi_0byte_nopreset
+ 121               		.type	write_twi_0byte_nopreset, @function
+ 122               	write_twi_0byte_nopreset:
+ 123               	/* prologue: function */
+ 124               	/* frame size = 0 */
+ 125 00e0 982F      		mov r25,r24
+ 126 00e2 84EA      		ldi r24,lo8(-92)
+ 127 00e4 8093 7400 		sts 116,r24
+ 128               	.L36:
+ 129 00e8 8091 7400 		lds r24,116
+ 130 00ec 87FF      		sbrs r24,7
+ 131 00ee 00C0      		rjmp .L36
+ 132 00f0 8091 7100 		lds r24,113
+ 133 00f4 887F      		andi r24,lo8(-8)
+ 134 00f6 8830      		cpi r24,lo8(8)
+ 135 00f8 01F0      		breq .L26
+ 136 00fa 8091 7100 		lds r24,113
+ 137 00fe 887F      		andi r24,lo8(-8)
+ 138 0100 8031      		cpi r24,lo8(16)
+ 139 0102 01F4      		brne .L36
+ 140               	.L26:
+ 141 0104 88E9      		ldi r24,lo8(-104)
+ 142 0106 8093 7300 		sts 115,r24
+ 143 010a 84E8      		ldi r24,lo8(-124)
+ 144 010c 8093 7400 		sts 116,r24
+ 145               	.L37:
+ 146 0110 8091 7400 		lds r24,116
+ 147 0114 87FF      		sbrs r24,7
+ 148 0116 00C0      		rjmp .L37
+ 149 0118 8091 7100 		lds r24,113
+ 150 011c 887F      		andi r24,lo8(-8)
+ 151 011e 8831      		cpi r24,lo8(24)
+ 152 0120 01F4      		brne .L37
+ 153 0122 9093 7300 		sts 115,r25
+ 154 0126 84E8      		ldi r24,lo8(-124)
+ 155 0128 8093 7400 		sts 116,r24
+ 156               	.L38:
+ 157 012c 8091 7400 		lds r24,116
+ 158 0130 87FF      		sbrs r24,7
+ 159 0132 00C0      		rjmp .L38
+ 160 0134 8091 7100 		lds r24,113
+ 161 0138 887F      		andi r24,lo8(-8)
+ 162 013a 8832      		cpi r24,lo8(40)
+ 163 013c 01F4      		brne .L38
+ 164 013e 84E9      		ldi r24,lo8(-108)
+ 165 0140 8093 7400 		sts 116,r24
+ 166               	/* epilogue start */
+ 167 0144 0895      		ret
+ 168               		.size	write_twi_0byte_nopreset, .-write_twi_0byte_nopreset
+ 169               	.global	InitI2C
+ 170               		.type	InitI2C, @function
+ 171               	InitI2C:
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 4
+
+
+ 172               	/* prologue: function */
+ 173               	/* frame size = 0 */
+ 174 0146 83E0      		ldi r24,lo8(3)
+ 175 0148 82BB      		out 50-32,r24
+ 176 014a 80B5      		in r24,64-32
+ 177 014c 8B7F      		andi r24,lo8(-5)
+ 178 014e 80BD      		out 64-32,r24
+ 179 0150 1092 7100 		sts 113,__zero_reg__
+ 180 0154 80E2      		ldi r24,lo8(32)
+ 181 0156 8093 7000 		sts 112,r24
+ 182 015a 84E4      		ldi r24,lo8(68)
+ 183 015c 8093 7400 		sts 116,r24
+ 184               	/* epilogue start */
+ 185 0160 0895      		ret
+ 186               		.size	InitI2C, .-InitI2C
+ 187               	.global	ReadTemperature
+ 188               		.type	ReadTemperature, @function
+ 189               	ReadTemperature:
+ 190               	/* prologue: function */
+ 191               	/* frame size = 0 */
+ 192 0162 84EA      		ldi r24,lo8(-92)
+ 193 0164 8093 7400 		sts 116,r24
+ 194               	.L42:
+ 195 0168 8091 7400 		lds r24,116
+ 196 016c 87FF      		sbrs r24,7
+ 197 016e 00C0      		rjmp .L42
+ 198 0170 89E9      		ldi r24,lo8(-103)
+ 199 0172 8093 7300 		sts 115,r24
+ 200 0176 84E8      		ldi r24,lo8(-124)
+ 201 0178 8093 7400 		sts 116,r24
+ 202               	.L43:
+ 203 017c 8091 7400 		lds r24,116
+ 204 0180 87FF      		sbrs r24,7
+ 205 0182 00C0      		rjmp .L43
+ 206 0184 84EC      		ldi r24,lo8(-60)
+ 207 0186 8093 7400 		sts 116,r24
+ 208               	.L44:
+ 209 018a 8091 7400 		lds r24,116
+ 210 018e 87FF      		sbrs r24,7
+ 211 0190 00C0      		rjmp .L44
+ 212 0192 9091 7300 		lds r25,115
+ 213 0196 84E8      		ldi r24,lo8(-124)
+ 214 0198 8093 7400 		sts 116,r24
+ 215               	.L45:
+ 216 019c 8091 7400 		lds r24,116
+ 217 01a0 87FF      		sbrs r24,7
+ 218 01a2 00C0      		rjmp .L45
+ 219 01a4 8091 7300 		lds r24,115
+ 220 01a8 392F      		mov r19,r25
+ 221 01aa 20E0      		ldi r18,lo8(0)
+ 222 01ac 90E0      		ldi r25,lo8(0)
+ 223 01ae 282B      		or r18,r24
+ 224 01b0 392B      		or r19,r25
+ 225 01b2 84E9      		ldi r24,lo8(-108)
+ 226 01b4 8093 7400 		sts 116,r24
+ 227 01b8 232F      		mov r18,r19
+ 228 01ba 330F      		lsl r19
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 5
+
+
+ 229 01bc 330B      		sbc r19,r19
+ 230 01be 2132      		cpi r18,33
+ 231 01c0 3105      		cpc r19,__zero_reg__
+ 232 01c2 04F4      		brge .L53
+ 233 01c4 87B7      		in r24,87-32
+ 234 01c6 8F7B      		andi r24,lo8(-65)
+ 235 01c8 87BF      		out 87-32,r24
+ 236 01ca C901      		movw r24,r18
+ 237               	/* epilogue start */
+ 238 01cc 0895      		ret
+ 239               	.L53:
+ 240 01ce 87B7      		in r24,87-32
+ 241 01d0 8064      		ori r24,lo8(64)
+ 242 01d2 87BF      		out 87-32,r24
+ 243 01d4 C901      		movw r24,r18
+ 244 01d6 0895      		ret
+ 245               		.size	ReadTemperature, .-ReadTemperature
+ 246               	.global	read_adc
+ 247               		.type	read_adc, @function
+ 248               	read_adc:
+ 249               	/* prologue: function */
+ 250               	/* frame size = 0 */
+ 251 01d8 369A      		sbi 38-32,6
+ 252               	.L55:
+ 253 01da 349B      		sbis 38-32,4
+ 254 01dc 00C0      		rjmp .L55
+ 255 01de 24B1      		in r18,36-32
+ 256 01e0 45B1      		in r20,37-32
+ 257 01e2 942F      		mov r25,r20
+ 258 01e4 80E0      		ldi r24,lo8(0)
+ 259 01e6 30E0      		ldi r19,lo8(0)
+ 260 01e8 282B      		or r18,r24
+ 261 01ea 392B      		or r19,r25
+ 262 01ec C901      		movw r24,r18
+ 263               	/* epilogue start */
+ 264 01ee 0895      		ret
+ 265               		.size	read_adc, .-read_adc
+ 266               	.global	LEDTask
+ 267               		.type	LEDTask, @function
+ 268               	LEDTask:
+ 269               	/* prologue: function */
+ 270               	/* frame size = 0 */
+ 271 01f0 8091 0000 		lds r24,gaptemp_sem
+ 272 01f4 9091 0000 		lds r25,(gaptemp_sem)+1
+ 273 01f8 60E0      		ldi r22,lo8(0)
+ 274 01fa 70E0      		ldi r23,hi8(0)
+ 275 01fc 40E0      		ldi r20,lo8(err)
+ 276 01fe 50E0      		ldi r21,hi8(err)
+ 277 0200 0E94 0000 		call OSSemPend
+ 278 0204 8FEF      		ldi r24,lo8(-1)
+ 279 0206 8ABB      		out 58-32,r24
+ 280 0208 0E94 0000 		call read_adc
+ 281 020c 8756      		subi r24,lo8(871)
+ 282 020e 9340      		sbci r25,hi8(871)
+ 283 0210 00F4      		brsh .L59
+ 284 0212 8091 0000 		lds r24,gap_temp
+ 285 0216 9091 0000 		lds r25,(gap_temp)+1
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 6
+
+
+ 286 021a 892B      		or r24,r25
+ 287 021c 01F0      		breq .+2
+ 288 021e 00C0      		rjmp .L72
+ 289               	.L59:
+ 290 0220 8091 0000 		lds r24,gap_temp
+ 291 0224 9091 0000 		lds r25,(gap_temp)+1
+ 292 0228 0897      		sbiw r24,8
+ 293 022a 04F0      		brlt .L61
+ 294 022c 40E0      		ldi r20,lo8(0)
+ 295 022e 50E0      		ldi r21,hi8(0)
+ 296 0230 20E0      		ldi r18,lo8(0)
+ 297 0232 30E0      		ldi r19,hi8(0)
+ 298               	.L62:
+ 299 0234 F901      		movw r30,r18
+ 300 0236 E050      		subi r30,lo8(-(led))
+ 301 0238 F040      		sbci r31,hi8(-(led))
+ 302 023a 8081      		ld r24,Z
+ 303 023c 480F      		add r20,r24
+ 304 023e 511D      		adc r21,__zero_reg__
+ 305 0240 2F5F      		subi r18,lo8(-(1))
+ 306 0242 3F4F      		sbci r19,hi8(-(1))
+ 307 0244 2930      		cpi r18,9
+ 308 0246 3105      		cpc r19,__zero_reg__
+ 309 0248 01F4      		brne .L62
+ 310               	.L71:
+ 311 024a 842F      		mov r24,r20
+ 312               	.L60:
+ 313 024c 8BBB      		out 59-32,r24
+ 314 024e 28EC      		ldi r18,lo8(200)
+ 315 0250 30E0      		ldi r19,hi8(200)
+ 316 0252 40E9      		ldi r20,lo8(400)
+ 317 0254 51E0      		ldi r21,hi8(400)
+ 318               	.L66:
+ 319 0256 CA01      		movw r24,r20
+ 320               	/* #APP */
+ 321               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 322 0258 0197      		1: sbiw r24,1
+ 323 025a 01F4      		brne 1b
+ 324               	 ;  0 "" 2
+ 325               	/* #NOAPP */
+ 326 025c 2150      		subi r18,lo8(-(-1))
+ 327 025e 3040      		sbci r19,hi8(-(-1))
+ 328 0260 01F4      		brne .L66
+ 329 0262 8091 0000 		lds r24,gaptemp_sem
+ 330 0266 9091 0000 		lds r25,(gaptemp_sem)+1
+ 331 026a 0E94 0000 		call OSSemPost
+ 332               	/* epilogue start */
+ 333 026e 0895      		ret
+ 334               	.L61:
+ 335 0270 8091 0000 		lds r24,gap_temp
+ 336 0274 9091 0000 		lds r25,(gap_temp)+1
+ 337 0278 892B      		or r24,r25
+ 338 027a 01F0      		breq .L73
+ 339 027c 2091 0000 		lds r18,gap_temp
+ 340 0280 3091 0000 		lds r19,(gap_temp)+1
+ 341 0284 1216      		cp __zero_reg__,r18
+ 342 0286 1306      		cpc __zero_reg__,r19
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 7
+
+
+ 343 0288 04F4      		brge .L74
+ 344 028a 40E0      		ldi r20,lo8(0)
+ 345 028c 50E0      		ldi r21,hi8(0)
+ 346               	.L65:
+ 347 028e F901      		movw r30,r18
+ 348 0290 E050      		subi r30,lo8(-(led))
+ 349 0292 F040      		sbci r31,hi8(-(led))
+ 350 0294 8081      		ld r24,Z
+ 351 0296 480F      		add r20,r24
+ 352 0298 511D      		adc r21,__zero_reg__
+ 353 029a 2150      		subi r18,lo8(-(-1))
+ 354 029c 3040      		sbci r19,hi8(-(-1))
+ 355 029e 1216      		cp __zero_reg__,r18
+ 356 02a0 1306      		cpc __zero_reg__,r19
+ 357 02a2 04F0      		brlt .L65
+ 358 02a4 00C0      		rjmp .L71
+ 359               	.L72:
+ 360 02a6 8091 0000 		lds r24,led+1
+ 361 02aa 00C0      		rjmp .L60
+ 362               	.L73:
+ 363 02ac 8091 0000 		lds r24,led
+ 364 02b0 00C0      		rjmp .L60
+ 365               	.L74:
+ 366 02b2 80E0      		ldi r24,lo8(0)
+ 367 02b4 00C0      		rjmp .L60
+ 368               		.size	LEDTask, .-LEDTask
+ 369               	.global	__vector_5
+ 370               		.type	__vector_5, @function
+ 371               	__vector_5:
+ 372 02b6 1F92      		push __zero_reg__
+ 373 02b8 0F92      		push r0
+ 374 02ba 0FB6      		in r0,__SREG__
+ 375 02bc 0F92      		push r0
+ 376 02be 0BB6      		in r0,91-32
+ 377 02c0 0F92      		push r0
+ 378 02c2 1124      		clr __zero_reg__
+ 379 02c4 2F93      		push r18
+ 380 02c6 3F93      		push r19
+ 381 02c8 4F93      		push r20
+ 382 02ca 5F93      		push r21
+ 383 02cc 6F93      		push r22
+ 384 02ce 7F93      		push r23
+ 385 02d0 8F93      		push r24
+ 386 02d2 9F93      		push r25
+ 387 02d4 AF93      		push r26
+ 388 02d6 BF93      		push r27
+ 389 02d8 EF93      		push r30
+ 390 02da FF93      		push r31
+ 391               	/* prologue: Signal */
+ 392               	/* frame size = 0 */
+ 393 02dc 8091 0000 		lds r24,is_working
+ 394 02e0 9091 0000 		lds r25,(is_working)+1
+ 395 02e4 892B      		or r24,r25
+ 396 02e6 01F0      		breq .L79
+ 397               	.L78:
+ 398               	/* epilogue start */
+ 399 02e8 FF91      		pop r31
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 8
+
+
+ 400 02ea EF91      		pop r30
+ 401 02ec BF91      		pop r27
+ 402 02ee AF91      		pop r26
+ 403 02f0 9F91      		pop r25
+ 404 02f2 8F91      		pop r24
+ 405 02f4 7F91      		pop r23
+ 406 02f6 6F91      		pop r22
+ 407 02f8 5F91      		pop r21
+ 408 02fa 4F91      		pop r20
+ 409 02fc 3F91      		pop r19
+ 410 02fe 2F91      		pop r18
+ 411 0300 0F90      		pop r0
+ 412 0302 0BBE      		out 91-32,r0
+ 413 0304 0F90      		pop r0
+ 414 0306 0FBE      		out __SREG__,r0
+ 415 0308 0F90      		pop r0
+ 416 030a 1F90      		pop __zero_reg__
+ 417 030c 1895      		reti
+ 418               	.L79:
+ 419 030e 8091 0000 		lds r24,hopetemp_sem
+ 420 0312 9091 0000 		lds r25,(hopetemp_sem)+1
+ 421 0316 60E0      		ldi r22,lo8(0)
+ 422 0318 70E0      		ldi r23,hi8(0)
+ 423 031a 40E0      		ldi r20,lo8(err)
+ 424 031c 50E0      		ldi r21,hi8(err)
+ 425 031e 0E94 0000 		call OSSemPend
+ 426 0322 8091 0000 		lds r24,hope_temp
+ 427 0326 9091 0000 		lds r25,(hope_temp)+1
+ 428 032a 8397      		sbiw r24,35
+ 429 032c 04F0      		brlt .L77
+ 430 032e 83E1      		ldi r24,lo8(19)
+ 431 0330 90E0      		ldi r25,hi8(19)
+ 432 0332 9093 0000 		sts (hope_temp)+1,r25
+ 433 0336 8093 0000 		sts hope_temp,r24
+ 434               	.L77:
+ 435 033a 8091 0000 		lds r24,hope_temp
+ 436 033e 9091 0000 		lds r25,(hope_temp)+1
+ 437 0342 0196      		adiw r24,1
+ 438 0344 9093 0000 		sts (hope_temp)+1,r25
+ 439 0348 8093 0000 		sts hope_temp,r24
+ 440 034c 8091 0000 		lds r24,hopetemp_sem
+ 441 0350 9091 0000 		lds r25,(hopetemp_sem)+1
+ 442 0354 0E94 0000 		call OSSemPost
+ 443 0358 80E4      		ldi r24,lo8(-25536)
+ 444 035a 9CE9      		ldi r25,hi8(-25536)
+ 445               	/* #APP */
+ 446               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 447 035c 0197      		1: sbiw r24,1
+ 448 035e 01F4      		brne 1b
+ 449               	 ;  0 "" 2
+ 450               	/* #NOAPP */
+ 451 0360 00C0      		rjmp .L78
+ 452               		.size	__vector_5, .-__vector_5
+ 453               	.global	FndDisplayTask
+ 454               		.type	FndDisplayTask, @function
+ 455               	FndDisplayTask:
+ 456 0362 AF92      		push r10
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 9
+
+
+ 457 0364 BF92      		push r11
+ 458 0366 CF92      		push r12
+ 459 0368 DF92      		push r13
+ 460 036a EF92      		push r14
+ 461 036c FF92      		push r15
+ 462 036e 0F93      		push r16
+ 463 0370 1F93      		push r17
+ 464 0372 DF93      		push r29
+ 465 0374 CF93      		push r28
+ 466 0376 CDB7      		in r28,__SP_L__
+ 467 0378 DEB7      		in r29,__SP_H__
+ 468 037a 2997      		sbiw r28,9
+ 469 037c 0FB6      		in __tmp_reg__,__SREG__
+ 470 037e F894      		cli
+ 471 0380 DEBF      		out __SP_H__,r29
+ 472 0382 0FBE      		out __SREG__,__tmp_reg__
+ 473 0384 CDBF      		out __SP_L__,r28
+ 474               	/* prologue: function */
+ 475               	/* frame size = 9 */
+ 476 0386 5E01      		movw r10,r28
+ 477 0388 0894      		sec
+ 478 038a A11C      		adc r10,__zero_reg__
+ 479 038c B11C      		adc r11,__zero_reg__
+ 480 038e 22E0      		ldi r18,lo8(2)
+ 481 0390 C22E      		mov r12,r18
+ 482 0392 D12C      		mov r13,__zero_reg__
+ 483 0394 CC0E      		add r12,r28
+ 484 0396 DD1E      		adc r13,r29
+ 485 0398 90E4      		ldi r25,lo8(8000)
+ 486 039a E92E      		mov r14,r25
+ 487 039c 9FE1      		ldi r25,hi8(8000)
+ 488 039e F92E      		mov r15,r25
+ 489               	.L98:
+ 490 03a0 8091 0000 		lds r24,is_working
+ 491 03a4 9091 0000 		lds r25,(is_working)+1
+ 492 03a8 892B      		or r24,r25
+ 493 03aa 01F0      		breq .+2
+ 494 03ac 00C0      		rjmp .L81
+ 495               	.L102:
+ 496 03ae 8091 0000 		lds r24,cnt
+ 497 03b2 9091 0000 		lds r25,(cnt)+1
+ 498 03b6 892B      		or r24,r25
+ 499 03b8 01F4      		brne .+2
+ 500 03ba 00C0      		rjmp .L100
+ 501               	.L82:
+ 502 03bc 2091 0000 		lds r18,cur_temp
+ 503 03c0 3091 0000 		lds r19,(cur_temp)+1
+ 504 03c4 C901      		movw r24,r18
+ 505 03c6 6AE0      		ldi r22,lo8(10)
+ 506 03c8 70E0      		ldi r23,hi8(10)
+ 507 03ca 0E94 0000 		call __divmodhi4
+ 508 03ce 7987      		std Y+9,r23
+ 509 03d0 6887      		std Y+8,r22
+ 510 03d2 C901      		movw r24,r18
+ 511 03d4 6AE0      		ldi r22,lo8(10)
+ 512 03d6 70E0      		ldi r23,hi8(10)
+ 513 03d8 0E94 0000 		call __divmodhi4
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 10
+
+
+ 514 03dc 9C01      		movw r18,r24
+ 515 03de 9F83      		std Y+7,r25
+ 516 03e0 8E83      		std Y+6,r24
+ 517 03e2 8091 0000 		lds r24,hope_temp
+ 518 03e6 9091 0000 		lds r25,(hope_temp)+1
+ 519 03ea 6AE0      		ldi r22,lo8(10)
+ 520 03ec 70E0      		ldi r23,hi8(10)
+ 521 03ee 0E94 0000 		call __divmodhi4
+ 522 03f2 7D83      		std Y+5,r23
+ 523 03f4 6C83      		std Y+4,r22
+ 524 03f6 8091 0000 		lds r24,hope_temp
+ 525 03fa 9091 0000 		lds r25,(hope_temp)+1
+ 526 03fe 6AE0      		ldi r22,lo8(10)
+ 527 0400 70E0      		ldi r23,hi8(10)
+ 528 0402 0E94 0000 		call __divmodhi4
+ 529 0406 9B83      		std Y+3,r25
+ 530 0408 8A83      		std Y+2,r24
+ 531 040a 40E0      		ldi r20,lo8(0)
+ 532 040c 50E0      		ldi r21,hi8(0)
+ 533 040e B901      		movw r22,r18
+ 534 0410 6050      		subi r22,lo8(-(digit))
+ 535 0412 7040      		sbci r23,hi8(-(digit))
+ 536               	.L83:
+ 537 0414 D601      		movw r26,r12
+ 538 0416 20E0      		ldi r18,lo8(0)
+ 539 0418 30E0      		ldi r19,hi8(0)
+ 540               	.L86:
+ 541 041a 2230      		cpi r18,2
+ 542 041c 3105      		cpc r19,__zero_reg__
+ 543 041e 01F4      		brne .+2
+ 544 0420 00C0      		rjmp .L101
+ 545 0422 ED91      		ld r30,X+
+ 546 0424 FC91      		ld r31,X
+ 547 0426 1197      		sbiw r26,1
+ 548 0428 E050      		subi r30,lo8(-(digit))
+ 549 042a F040      		sbci r31,hi8(-(digit))
+ 550 042c 8081      		ld r24,Z
+ 551 042e 85BB      		out 53-32,r24
+ 552               	.L85:
+ 553 0430 F901      		movw r30,r18
+ 554 0432 E050      		subi r30,lo8(-(fnd_sel))
+ 555 0434 F040      		sbci r31,hi8(-(fnd_sel))
+ 556 0436 8081      		ld r24,Z
+ 557 0438 8093 6500 		sts 101,r24
+ 558 043c C701      		movw r24,r14
+ 559               	/* #APP */
+ 560               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 561 043e 0197      		1: sbiw r24,1
+ 562 0440 01F4      		brne 1b
+ 563               	 ;  0 "" 2
+ 564               	/* #NOAPP */
+ 565 0442 2F5F      		subi r18,lo8(-(1))
+ 566 0444 3F4F      		sbci r19,hi8(-(1))
+ 567 0446 1296      		adiw r26,2
+ 568 0448 2430      		cpi r18,4
+ 569 044a 3105      		cpc r19,__zero_reg__
+ 570 044c 01F4      		brne .L86
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 11
+
+
+ 571 044e 4F5F      		subi r20,lo8(-(1))
+ 572 0450 5F4F      		sbci r21,hi8(-(1))
+ 573 0452 4436      		cpi r20,100
+ 574 0454 5105      		cpc r21,__zero_reg__
+ 575 0456 01F4      		brne .L83
+ 576 0458 8091 0000 		lds r24,is_working
+ 577 045c 9091 0000 		lds r25,(is_working)+1
+ 578 0460 892B      		or r24,r25
+ 579 0462 01F4      		brne .+2
+ 580 0464 00C0      		rjmp .L102
+ 581               	.L81:
+ 582 0466 8091 0000 		lds r24,start_grp
+ 583 046a 9091 0000 		lds r25,(start_grp)+1
+ 584 046e 61E0      		ldi r22,lo8(1)
+ 585 0470 41E0      		ldi r20,lo8(1)
+ 586 0472 9501      		movw r18,r10
+ 587 0474 0E94 0000 		call OSFlagPost
+ 588 0478 8091 0000 		lds r24,temps_MsgQueue
+ 589 047c 9091 0000 		lds r25,(temps_MsgQueue)+1
+ 590 0480 60E0      		ldi r22,lo8(0)
+ 591 0482 70E0      		ldi r23,hi8(0)
+ 592 0484 A501      		movw r20,r10
+ 593 0486 0E94 0000 		call OSQPend
+ 594 048a FC01      		movw r30,r24
+ 595 048c 8081      		ld r24,Z
+ 596 048e 9181      		ldd r25,Z+1
+ 597 0490 9093 0000 		sts (cur_temp)+1,r25
+ 598 0494 8093 0000 		sts cur_temp,r24
+ 599 0498 8091 0000 		lds r24,temps_MsgQueue
+ 600 049c 9091 0000 		lds r25,(temps_MsgQueue)+1
+ 601 04a0 60E0      		ldi r22,lo8(0)
+ 602 04a2 70E0      		ldi r23,hi8(0)
+ 603 04a4 A501      		movw r20,r10
+ 604 04a6 0E94 0000 		call OSQPend
+ 605 04aa FC01      		movw r30,r24
+ 606 04ac 8081      		ld r24,Z
+ 607 04ae 9181      		ldd r25,Z+1
+ 608 04b0 9093 0000 		sts (hope_temp)+1,r25
+ 609 04b4 8093 0000 		sts hope_temp,r24
+ 610 04b8 8091 0000 		lds r24,gaptemp_sem
+ 611 04bc 9091 0000 		lds r25,(gaptemp_sem)+1
+ 612 04c0 60E0      		ldi r22,lo8(0)
+ 613 04c2 70E0      		ldi r23,hi8(0)
+ 614 04c4 A501      		movw r20,r10
+ 615 04c6 0E94 0000 		call OSSemPend
+ 616 04ca 8091 0000 		lds r24,hope_temp
+ 617 04ce 9091 0000 		lds r25,(hope_temp)+1
+ 618 04d2 2091 0000 		lds r18,cur_temp
+ 619 04d6 3091 0000 		lds r19,(cur_temp)+1
+ 620 04da 821B      		sub r24,r18
+ 621 04dc 930B      		sbc r25,r19
+ 622 04de 9093 0000 		sts (gap_temp)+1,r25
+ 623 04e2 8093 0000 		sts gap_temp,r24
+ 624 04e6 8091 0000 		lds r24,gaptemp_sem
+ 625 04ea 9091 0000 		lds r25,(gaptemp_sem)+1
+ 626 04ee 0E94 0000 		call OSSemPost
+ 627 04f2 8091 0000 		lds r24,gap_temp
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 12
+
+
+ 628 04f6 9091 0000 		lds r25,(gap_temp)+1
+ 629 04fa 8F5F      		subi r24,lo8(-1)
+ 630 04fc 9F4F      		sbci r25,hi8(-1)
+ 631 04fe 01F4      		brne .+2
+ 632 0500 00C0      		rjmp .L103
+ 633 0502 0E94 0000 		call LEDTask
+ 634 0506 2091 0000 		lds r18,cur_temp
+ 635 050a 3091 0000 		lds r19,(cur_temp)+1
+ 636 050e C901      		movw r24,r18
+ 637 0510 6AE0      		ldi r22,lo8(10)
+ 638 0512 70E0      		ldi r23,hi8(10)
+ 639 0514 0E94 0000 		call __divmodhi4
+ 640 0518 7987      		std Y+9,r23
+ 641 051a 6887      		std Y+8,r22
+ 642 051c C901      		movw r24,r18
+ 643 051e 6AE0      		ldi r22,lo8(10)
+ 644 0520 70E0      		ldi r23,hi8(10)
+ 645 0522 0E94 0000 		call __divmodhi4
+ 646 0526 9C01      		movw r18,r24
+ 647 0528 9F83      		std Y+7,r25
+ 648 052a 8E83      		std Y+6,r24
+ 649 052c 8091 0000 		lds r24,hope_temp
+ 650 0530 9091 0000 		lds r25,(hope_temp)+1
+ 651 0534 6AE0      		ldi r22,lo8(10)
+ 652 0536 70E0      		ldi r23,hi8(10)
+ 653 0538 0E94 0000 		call __divmodhi4
+ 654 053c 7D83      		std Y+5,r23
+ 655 053e 6C83      		std Y+4,r22
+ 656 0540 8091 0000 		lds r24,hope_temp
+ 657 0544 9091 0000 		lds r25,(hope_temp)+1
+ 658 0548 6AE0      		ldi r22,lo8(10)
+ 659 054a 70E0      		ldi r23,hi8(10)
+ 660 054c 0E94 0000 		call __divmodhi4
+ 661 0550 9B83      		std Y+3,r25
+ 662 0552 8A83      		std Y+2,r24
+ 663 0554 40E0      		ldi r20,lo8(0)
+ 664 0556 50E0      		ldi r21,hi8(0)
+ 665 0558 B901      		movw r22,r18
+ 666 055a 6050      		subi r22,lo8(-(digit))
+ 667 055c 7040      		sbci r23,hi8(-(digit))
+ 668               	.L89:
+ 669 055e D601      		movw r26,r12
+ 670 0560 20E0      		ldi r18,lo8(0)
+ 671 0562 30E0      		ldi r19,hi8(0)
+ 672               	.L92:
+ 673 0564 2230      		cpi r18,2
+ 674 0566 3105      		cpc r19,__zero_reg__
+ 675 0568 01F0      		breq .L104
+ 676 056a ED91      		ld r30,X+
+ 677 056c FC91      		ld r31,X
+ 678 056e 1197      		sbiw r26,1
+ 679 0570 E050      		subi r30,lo8(-(digit))
+ 680 0572 F040      		sbci r31,hi8(-(digit))
+ 681 0574 8081      		ld r24,Z
+ 682 0576 85BB      		out 53-32,r24
+ 683               	.L91:
+ 684 0578 F901      		movw r30,r18
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 13
+
+
+ 685 057a E050      		subi r30,lo8(-(fnd_sel))
+ 686 057c F040      		sbci r31,hi8(-(fnd_sel))
+ 687 057e 8081      		ld r24,Z
+ 688 0580 8093 6500 		sts 101,r24
+ 689 0584 C701      		movw r24,r14
+ 690               	/* #APP */
+ 691               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 692 0586 0197      		1: sbiw r24,1
+ 693 0588 01F4      		brne 1b
+ 694               	 ;  0 "" 2
+ 695               	/* #NOAPP */
+ 696 058a 2F5F      		subi r18,lo8(-(1))
+ 697 058c 3F4F      		sbci r19,hi8(-(1))
+ 698 058e 1296      		adiw r26,2
+ 699 0590 2430      		cpi r18,4
+ 700 0592 3105      		cpc r19,__zero_reg__
+ 701 0594 01F4      		brne .L92
+ 702 0596 4F5F      		subi r20,lo8(-(1))
+ 703 0598 5F4F      		sbci r21,hi8(-(1))
+ 704 059a 4436      		cpi r20,100
+ 705 059c 5105      		cpc r21,__zero_reg__
+ 706 059e 01F4      		brne .L89
+ 707 05a0 00C0      		rjmp .L98
+ 708               	.L101:
+ 709 05a2 FB01      		movw r30,r22
+ 710 05a4 8081      		ld r24,Z
+ 711 05a6 90E0      		ldi r25,lo8(0)
+ 712 05a8 8058      		subi r24,lo8(-(128))
+ 713 05aa 9F4F      		sbci r25,hi8(-(128))
+ 714 05ac 85BB      		out 53-32,r24
+ 715 05ae 00C0      		rjmp .L85
+ 716               	.L104:
+ 717 05b0 FB01      		movw r30,r22
+ 718 05b2 8081      		ld r24,Z
+ 719 05b4 90E0      		ldi r25,lo8(0)
+ 720 05b6 8058      		subi r24,lo8(-(128))
+ 721 05b8 9F4F      		sbci r25,hi8(-(128))
+ 722 05ba 85BB      		out 53-32,r24
+ 723 05bc 00C0      		rjmp .L91
+ 724               	.L100:
+ 725 05be 8091 0000 		lds r24,curtemp_Mbox
+ 726 05c2 9091 0000 		lds r25,(curtemp_Mbox)+1
+ 727 05c6 60E0      		ldi r22,lo8(0)
+ 728 05c8 70E0      		ldi r23,hi8(0)
+ 729 05ca A501      		movw r20,r10
+ 730 05cc 0E94 0000 		call OSMboxPend
+ 731 05d0 FC01      		movw r30,r24
+ 732 05d2 8081      		ld r24,Z
+ 733 05d4 9181      		ldd r25,Z+1
+ 734 05d6 9093 0000 		sts (cur_temp)+1,r25
+ 735 05da 8093 0000 		sts cur_temp,r24
+ 736 05de 8091 0000 		lds r24,cnt
+ 737 05e2 9091 0000 		lds r25,(cnt)+1
+ 738 05e6 0196      		adiw r24,1
+ 739 05e8 9093 0000 		sts (cnt)+1,r25
+ 740 05ec 8093 0000 		sts cnt,r24
+ 741 05f0 00C0      		rjmp .L82
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 14
+
+
+ 742               	.L103:
+ 743 05f2 8091 0000 		lds r24,end_grp
+ 744 05f6 9091 0000 		lds r25,(end_grp)+1
+ 745 05fa 61E0      		ldi r22,lo8(1)
+ 746 05fc 41E0      		ldi r20,lo8(1)
+ 747 05fe 9501      		movw r18,r10
+ 748 0600 0E94 0000 		call OSFlagPost
+ 749 0604 8091 0000 		lds r24,reset_grp
+ 750 0608 9091 0000 		lds r25,(reset_grp)+1
+ 751 060c 61E0      		ldi r22,lo8(1)
+ 752 060e 42E8      		ldi r20,lo8(-126)
+ 753 0610 20E0      		ldi r18,lo8(0)
+ 754 0612 30E0      		ldi r19,hi8(0)
+ 755 0614 8501      		movw r16,r10
+ 756 0616 0E94 0000 		call OSFlagPend
+ 757 061a 8091 0000 		lds r24,reset_grp
+ 758 061e 9091 0000 		lds r25,(reset_grp)+1
+ 759 0622 62E0      		ldi r22,lo8(2)
+ 760 0624 41E0      		ldi r20,lo8(1)
+ 761 0626 9501      		movw r18,r10
+ 762 0628 0E94 0000 		call OSFlagPost
+ 763 062c 00C0      		rjmp .L98
+ 764               		.size	FndDisplayTask, .-FndDisplayTask
+ 765               	.global	endHeatTask
+ 766               		.type	endHeatTask, @function
+ 767               	endHeatTask:
+ 768 062e AF92      		push r10
+ 769 0630 BF92      		push r11
+ 770 0632 DF92      		push r13
+ 771 0634 EF92      		push r14
+ 772 0636 FF92      		push r15
+ 773 0638 0F93      		push r16
+ 774 063a 1F93      		push r17
+ 775 063c CF93      		push r28
+ 776 063e DF93      		push r29
+ 777               	/* prologue: function */
+ 778               	/* frame size = 0 */
+ 779 0640 C0E9      		ldi r28,lo8(400)
+ 780 0642 D1E0      		ldi r29,hi8(400)
+ 781 0644 50E1      		ldi r21,lo8(16)
+ 782 0646 D52E      		mov r13,r21
+ 783 0648 40E4      		ldi r20,lo8(-25536)
+ 784 064a E42E      		mov r14,r20
+ 785 064c 4CE9      		ldi r20,hi8(-25536)
+ 786 064e F42E      		mov r15,r20
+ 787 0650 34E1      		ldi r19,lo8(20)
+ 788 0652 A32E      		mov r10,r19
+ 789 0654 B12C      		mov r11,__zero_reg__
+ 790               	.L109:
+ 791 0656 8091 0000 		lds r24,end_grp
+ 792 065a 9091 0000 		lds r25,(end_grp)+1
+ 793 065e 61E0      		ldi r22,lo8(1)
+ 794 0660 42E8      		ldi r20,lo8(-126)
+ 795 0662 20E0      		ldi r18,lo8(0)
+ 796 0664 30E0      		ldi r19,hi8(0)
+ 797 0666 00E0      		ldi r16,lo8(err)
+ 798 0668 10E0      		ldi r17,hi8(err)
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 15
+
+
+ 799 066a 0E94 0000 		call OSFlagPend
+ 800 066e 1092 0000 		sts (is_working)+1,__zero_reg__
+ 801 0672 1092 0000 		sts is_working,__zero_reg__
+ 802 0676 0E94 0000 		call LEDTask
+ 803 067a 20E1      		ldi r18,lo8(10000)
+ 804 067c 37E2      		ldi r19,hi8(10000)
+ 805               	.L106:
+ 806 067e CE01      		movw r24,r28
+ 807               	/* #APP */
+ 808               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 809 0680 0197      		1: sbiw r24,1
+ 810 0682 01F4      		brne 1b
+ 811               	 ;  0 "" 2
+ 812               	/* #NOAPP */
+ 813 0684 2150      		subi r18,lo8(-(-1))
+ 814 0686 3040      		sbci r19,hi8(-(-1))
+ 815 0688 01F4      		brne .L106
+ 816 068a 20E0      		ldi r18,lo8(0)
+ 817 068c 30E0      		ldi r19,hi8(0)
+ 818               	.L107:
+ 819 068e D8BA      		out 56-32,r13
+ 820 0690 C701      		movw r24,r14
+ 821               	/* #APP */
+ 822               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 823 0692 0197      		1: sbiw r24,1
+ 824 0694 01F4      		brne 1b
+ 825               	 ;  0 "" 2
+ 826               	/* #NOAPP */
+ 827 0696 18BA      		out 56-32,__zero_reg__
+ 828 0698 C701      		movw r24,r14
+ 829               	/* #APP */
+ 830               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 831 069a 0197      		1: sbiw r24,1
+ 832 069c 01F4      		brne 1b
+ 833               	 ;  0 "" 2
+ 834               	/* #NOAPP */
+ 835 069e 2F5F      		subi r18,lo8(-(1))
+ 836 06a0 3F4F      		sbci r19,hi8(-(1))
+ 837 06a2 2A30      		cpi r18,10
+ 838 06a4 3105      		cpc r19,__zero_reg__
+ 839 06a6 01F4      		brne .L107
+ 840 06a8 28EE      		ldi r18,lo8(1000)
+ 841 06aa 33E0      		ldi r19,hi8(1000)
+ 842               	.L108:
+ 843 06ac CE01      		movw r24,r28
+ 844               	/* #APP */
+ 845               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 846 06ae 0197      		1: sbiw r24,1
+ 847 06b0 01F4      		brne 1b
+ 848               	 ;  0 "" 2
+ 849               	/* #NOAPP */
+ 850 06b2 2150      		subi r18,lo8(-(-1))
+ 851 06b4 3040      		sbci r19,hi8(-(-1))
+ 852 06b6 01F4      		brne .L108
+ 853 06b8 8091 0000 		lds r24,hopetemp_sem
+ 854 06bc 9091 0000 		lds r25,(hopetemp_sem)+1
+ 855 06c0 60E0      		ldi r22,lo8(0)
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 16
+
+
+ 856 06c2 70E0      		ldi r23,hi8(0)
+ 857 06c4 40E0      		ldi r20,lo8(err)
+ 858 06c6 50E0      		ldi r21,hi8(err)
+ 859 06c8 0E94 0000 		call OSSemPend
+ 860 06cc B092 0000 		sts (hope_temp)+1,r11
+ 861 06d0 A092 0000 		sts hope_temp,r10
+ 862 06d4 8091 0000 		lds r24,hopetemp_sem
+ 863 06d8 9091 0000 		lds r25,(hopetemp_sem)+1
+ 864 06dc 0E94 0000 		call OSSemPost
+ 865 06e0 8091 0000 		lds r24,reset_grp
+ 866 06e4 9091 0000 		lds r25,(reset_grp)+1
+ 867 06e8 61E0      		ldi r22,lo8(1)
+ 868 06ea 41E0      		ldi r20,lo8(1)
+ 869 06ec 20E0      		ldi r18,lo8(err)
+ 870 06ee 30E0      		ldi r19,hi8(err)
+ 871 06f0 0E94 0000 		call OSFlagPost
+ 872 06f4 00C0      		rjmp .L109
+ 873               		.size	endHeatTask, .-endHeatTask
+ 874               	.global	startHeatTask
+ 875               		.type	startHeatTask, @function
+ 876               	startHeatTask:
+ 877 06f6 0F93      		push r16
+ 878 06f8 1F93      		push r17
+ 879 06fa CF93      		push r28
+ 880 06fc DF93      		push r29
+ 881               	/* prologue: function */
+ 882               	/* frame size = 0 */
+ 883 06fe C0E9      		ldi r28,lo8(400)
+ 884 0700 D1E0      		ldi r29,hi8(400)
+ 885               	.L116:
+ 886 0702 8091 0000 		lds r24,start_grp
+ 887 0706 9091 0000 		lds r25,(start_grp)+1
+ 888 070a 61E0      		ldi r22,lo8(1)
+ 889 070c 42E8      		ldi r20,lo8(-126)
+ 890 070e 20E0      		ldi r18,lo8(0)
+ 891 0710 30E0      		ldi r19,hi8(0)
+ 892 0712 00E0      		ldi r16,lo8(err)
+ 893 0714 10E0      		ldi r17,hi8(err)
+ 894 0716 0E94 0000 		call OSFlagPend
+ 895 071a 8091 0000 		lds r24,cur_temp
+ 896 071e 9091 0000 		lds r25,(cur_temp)+1
+ 897 0722 60E0      		ldi r22,lo8(0)
+ 898 0724 70E0      		ldi r23,hi8(0)
+ 899 0726 A801      		movw r20,r16
+ 900 0728 0E94 0000 		call OSSemPend
+ 901 072c 8091 0000 		lds r24,cur_temp
+ 902 0730 9091 0000 		lds r25,(cur_temp)+1
+ 903 0734 0196      		adiw r24,1
+ 904 0736 9093 0000 		sts (cur_temp)+1,r25
+ 905 073a 8093 0000 		sts cur_temp,r24
+ 906 073e 20E1      		ldi r18,lo8(10000)
+ 907 0740 37E2      		ldi r19,hi8(10000)
+ 908               	.L115:
+ 909 0742 FE01      		movw r30,r28
+ 910               	/* #APP */
+ 911               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 912 0744 3197      		1: sbiw r30,1
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 17
+
+
+ 913 0746 01F4      		brne 1b
+ 914               	 ;  0 "" 2
+ 915               	/* #NOAPP */
+ 916 0748 2150      		subi r18,lo8(-(-1))
+ 917 074a 3040      		sbci r19,hi8(-(-1))
+ 918 074c 01F4      		brne .L115
+ 919 074e 0E94 0000 		call OSSemPost
+ 920 0752 8091 0000 		lds r24,temps_MsgQueue
+ 921 0756 9091 0000 		lds r25,(temps_MsgQueue)+1
+ 922 075a 60E0      		ldi r22,lo8(cur_temp)
+ 923 075c 70E0      		ldi r23,hi8(cur_temp)
+ 924 075e 0E94 0000 		call OSQPost
+ 925 0762 8091 0000 		lds r24,temps_MsgQueue
+ 926 0766 9091 0000 		lds r25,(temps_MsgQueue)+1
+ 927 076a 60E0      		ldi r22,lo8(hope_temp)
+ 928 076c 70E0      		ldi r23,hi8(hope_temp)
+ 929 076e 0E94 0000 		call OSQPost
+ 930 0772 00C0      		rjmp .L116
+ 931               		.size	startHeatTask, .-startHeatTask
+ 932               	.global	TemperatureTask
+ 933               		.type	TemperatureTask, @function
+ 934               	TemperatureTask:
+ 935 0774 CF92      		push r12
+ 936 0776 DF92      		push r13
+ 937 0778 EF92      		push r14
+ 938 077a FF92      		push r15
+ 939 077c 0F93      		push r16
+ 940 077e 1F93      		push r17
+ 941 0780 DF93      		push r29
+ 942 0782 CF93      		push r28
+ 943 0784 0F92      		push __tmp_reg__
+ 944 0786 CDB7      		in r28,__SP_L__
+ 945 0788 DEB7      		in r29,__SP_H__
+ 946               	/* prologue: function */
+ 947               	/* frame size = 1 */
+ 948 078a 0E94 0000 		call InitI2C
+ 949 078e 81E0      		ldi r24,lo8(1)
+ 950 0790 60E0      		ldi r22,lo8(0)
+ 951 0792 0E94 0000 		call write_twi_1byte_nopreset
+ 952 0796 80E0      		ldi r24,lo8(0)
+ 953 0798 0E94 0000 		call write_twi_0byte_nopreset
+ 954 079c 7E01      		movw r14,r28
+ 955 079e 0894      		sec
+ 956 07a0 E11C      		adc r14,__zero_reg__
+ 957 07a2 F11C      		adc r15,__zero_reg__
+ 958 07a4 60E4      		ldi r22,lo8(-25536)
+ 959 07a6 C62E      		mov r12,r22
+ 960 07a8 6CE9      		ldi r22,hi8(-25536)
+ 961 07aa D62E      		mov r13,r22
+ 962               	.L120:
+ 963 07ac 8091 0000 		lds r24,curtemp_sem
+ 964 07b0 9091 0000 		lds r25,(curtemp_sem)+1
+ 965 07b4 60E0      		ldi r22,lo8(0)
+ 966 07b6 70E0      		ldi r23,hi8(0)
+ 967 07b8 A701      		movw r20,r14
+ 968 07ba 0E94 0000 		call OSSemPend
+ 969 07be 0E94 0000 		call ReadTemperature
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 18
+
+
+ 970 07c2 9093 0000 		sts (cur_temp)+1,r25
+ 971 07c6 8093 0000 		sts cur_temp,r24
+ 972 07ca 8091 0000 		lds r24,curtemp_sem
+ 973 07ce 9091 0000 		lds r25,(curtemp_sem)+1
+ 974 07d2 0E94 0000 		call OSSemPost
+ 975 07d6 8091 0000 		lds r24,curtemp_Mbox
+ 976 07da 9091 0000 		lds r25,(curtemp_Mbox)+1
+ 977 07de 60E0      		ldi r22,lo8(cur_temp)
+ 978 07e0 70E0      		ldi r23,hi8(cur_temp)
+ 979 07e2 0E94 0000 		call OSMboxPost
+ 980 07e6 8091 0000 		lds r24,reset_grp
+ 981 07ea 9091 0000 		lds r25,(reset_grp)+1
+ 982 07ee 62E0      		ldi r22,lo8(2)
+ 983 07f0 42E8      		ldi r20,lo8(-126)
+ 984 07f2 20E0      		ldi r18,lo8(0)
+ 985 07f4 30E0      		ldi r19,hi8(0)
+ 986 07f6 8701      		movw r16,r14
+ 987 07f8 0E94 0000 		call OSFlagPend
+ 988 07fc 1092 0000 		sts (cnt)+1,__zero_reg__
+ 989 0800 1092 0000 		sts cnt,__zero_reg__
+ 990 0804 C601      		movw r24,r12
+ 991               	/* #APP */
+ 992               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 993 0806 0197      		1: sbiw r24,1
+ 994 0808 01F4      		brne 1b
+ 995               	 ;  0 "" 2
+ 996               	/* #NOAPP */
+ 997 080a 00C0      		rjmp .L120
+ 998               		.size	TemperatureTask, .-TemperatureTask
+ 999               	.global	main
+ 1000               		.type	main, @function
+ 1001               	main:
+ 1002 080c 0F93      		push r16
+ 1003 080e 1F93      		push r17
+ 1004               	/* prologue: function */
+ 1005               	/* frame size = 0 */
+ 1006 0810 0E94 0000 		call OSInit
+ 1007               	/* #APP */
+ 1008               	 ;  57 "lab2.c" 1
+ 1009 0814 F894      		cli
+ 1010               	 ;  0 "" 2
+ 1011               	/* #NOAPP */
+ 1012 0816 87E0      		ldi r24,lo8(7)
+ 1013 0818 83BF      		out 83-32,r24
+ 1014 081a 81E0      		ldi r24,lo8(1)
+ 1015 081c 87BF      		out 87-32,r24
+ 1016 081e 84E6      		ldi r24,lo8(100)
+ 1017 0820 82BF      		out 82-32,r24
+ 1018 0822 17B8      		out 39-32,__zero_reg__
+ 1019 0824 87E8      		ldi r24,lo8(-121)
+ 1020 0826 86B9      		out 38-32,r24
+ 1021 0828 9FEF      		ldi r25,lo8(-1)
+ 1022 082a 94BB      		out 52-32,r25
+ 1023 082c 80E1      		ldi r24,lo8(16)
+ 1024 082e 87BB      		out 55-32,r24
+ 1025 0830 2FE0      		ldi r18,lo8(15)
+ 1026 0832 2093 6400 		sts 100,r18
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 19
+
+
+ 1027 0836 9ABB      		out 58-32,r25
+ 1028 0838 8FEC      		ldi r24,lo8(-49)
+ 1029 083a 82B9      		out 34-32,r24
+ 1030 083c 8AE0      		ldi r24,lo8(10)
+ 1031 083e 8ABF      		out 90-32,r24
+ 1032 0840 80E3      		ldi r24,lo8(48)
+ 1033 0842 89BF      		out 89-32,r24
+ 1034 0844 8FB7      		in r24,__SREG__
+ 1035 0846 8068      		ori r24,lo8(-128)
+ 1036 0848 8FBF      		out __SREG__,r24
+ 1037 084a 2093 6500 		sts 101,r18
+ 1038               	/* #APP */
+ 1039               	 ;  74 "lab2.c" 1
+ 1040 084e 7894      		sei
+ 1041               	 ;  0 "" 2
+ 1042               	/* #NOAPP */
+ 1043 0850 81E0      		ldi r24,lo8(1)
+ 1044 0852 90E0      		ldi r25,hi8(1)
+ 1045 0854 0E94 0000 		call OSSemCreate
+ 1046 0858 9093 0000 		sts (curtemp_sem)+1,r25
+ 1047 085c 8093 0000 		sts curtemp_sem,r24
+ 1048 0860 81E0      		ldi r24,lo8(1)
+ 1049 0862 90E0      		ldi r25,hi8(1)
+ 1050 0864 0E94 0000 		call OSSemCreate
+ 1051 0868 9093 0000 		sts (hopetemp_sem)+1,r25
+ 1052 086c 8093 0000 		sts hopetemp_sem,r24
+ 1053 0870 81E0      		ldi r24,lo8(1)
+ 1054 0872 90E0      		ldi r25,hi8(1)
+ 1055 0874 0E94 0000 		call OSSemCreate
+ 1056 0878 9093 0000 		sts (gaptemp_sem)+1,r25
+ 1057 087c 8093 0000 		sts gaptemp_sem,r24
+ 1058 0880 80E0      		ldi r24,lo8(0)
+ 1059 0882 90E0      		ldi r25,hi8(0)
+ 1060 0884 0E94 0000 		call OSMboxCreate
+ 1061 0888 9093 0000 		sts (curtemp_Mbox)+1,r25
+ 1062 088c 8093 0000 		sts curtemp_Mbox,r24
+ 1063 0890 80E0      		ldi r24,lo8(QTable)
+ 1064 0892 90E0      		ldi r25,hi8(QTable)
+ 1065 0894 62E0      		ldi r22,lo8(2)
+ 1066 0896 70E0      		ldi r23,hi8(2)
+ 1067 0898 0E94 0000 		call OSQCreate
+ 1068 089c 9093 0000 		sts (temps_MsgQueue)+1,r25
+ 1069 08a0 8093 0000 		sts temps_MsgQueue,r24
+ 1070 08a4 00E0      		ldi r16,lo8(err)
+ 1071 08a6 10E0      		ldi r17,hi8(err)
+ 1072 08a8 80E0      		ldi r24,lo8(0)
+ 1073 08aa B801      		movw r22,r16
+ 1074 08ac 0E94 0000 		call OSFlagCreate
+ 1075 08b0 9093 0000 		sts (start_grp)+1,r25
+ 1076 08b4 8093 0000 		sts start_grp,r24
+ 1077 08b8 80E0      		ldi r24,lo8(0)
+ 1078 08ba B801      		movw r22,r16
+ 1079 08bc 0E94 0000 		call OSFlagCreate
+ 1080 08c0 9093 0000 		sts (end_grp)+1,r25
+ 1081 08c4 8093 0000 		sts end_grp,r24
+ 1082 08c8 80E0      		ldi r24,lo8(0)
+ 1083 08ca B801      		movw r22,r16
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 20
+
+
+ 1084 08cc 0E94 0000 		call OSFlagCreate
+ 1085 08d0 9093 0000 		sts (reset_grp)+1,r25
+ 1086 08d4 8093 0000 		sts reset_grp,r24
+ 1087 08d8 80E0      		ldi r24,lo8(gs(TemperatureTask))
+ 1088 08da 90E0      		ldi r25,hi8(gs(TemperatureTask))
+ 1089 08dc 60E0      		ldi r22,lo8(0)
+ 1090 08de 70E0      		ldi r23,hi8(0)
+ 1091 08e0 40E0      		ldi r20,lo8(TaskStk+127)
+ 1092 08e2 50E0      		ldi r21,hi8(TaskStk+127)
+ 1093 08e4 20E0      		ldi r18,lo8(0)
+ 1094 08e6 0E94 0000 		call OSTaskCreate
+ 1095 08ea 80E0      		ldi r24,lo8(gs(FndDisplayTask))
+ 1096 08ec 90E0      		ldi r25,hi8(gs(FndDisplayTask))
+ 1097 08ee 60E0      		ldi r22,lo8(0)
+ 1098 08f0 70E0      		ldi r23,hi8(0)
+ 1099 08f2 40E0      		ldi r20,lo8(TaskStk+255)
+ 1100 08f4 50E0      		ldi r21,hi8(TaskStk+255)
+ 1101 08f6 21E0      		ldi r18,lo8(1)
+ 1102 08f8 0E94 0000 		call OSTaskCreate
+ 1103 08fc 80E0      		ldi r24,lo8(gs(startHeatTask))
+ 1104 08fe 90E0      		ldi r25,hi8(gs(startHeatTask))
+ 1105 0900 60E0      		ldi r22,lo8(0)
+ 1106 0902 70E0      		ldi r23,hi8(0)
+ 1107 0904 40E0      		ldi r20,lo8(TaskStk+383)
+ 1108 0906 50E0      		ldi r21,hi8(TaskStk+383)
+ 1109 0908 22E0      		ldi r18,lo8(2)
+ 1110 090a 0E94 0000 		call OSTaskCreate
+ 1111 090e 80E0      		ldi r24,lo8(gs(endHeatTask))
+ 1112 0910 90E0      		ldi r25,hi8(gs(endHeatTask))
+ 1113 0912 60E0      		ldi r22,lo8(0)
+ 1114 0914 70E0      		ldi r23,hi8(0)
+ 1115 0916 40E0      		ldi r20,lo8(TaskStk+511)
+ 1116 0918 50E0      		ldi r21,hi8(TaskStk+511)
+ 1117 091a 23E0      		ldi r18,lo8(3)
+ 1118 091c 0E94 0000 		call OSTaskCreate
+ 1119 0920 0E94 0000 		call OSStart
+ 1120 0924 80E0      		ldi r24,lo8(0)
+ 1121 0926 90E0      		ldi r25,hi8(0)
+ 1122               	/* epilogue start */
+ 1123 0928 1F91      		pop r17
+ 1124 092a 0F91      		pop r16
+ 1125 092c 0895      		ret
+ 1126               		.size	main, .-main
+ 1127               	.global	fnd_sel
+ 1128               		.data
+ 1129               		.type	fnd_sel, @object
+ 1130               		.size	fnd_sel, 4
+ 1131               	fnd_sel:
+ 1132 0000 01        		.byte	1
+ 1133 0001 02        		.byte	2
+ 1134 0002 04        		.byte	4
+ 1135 0003 08        		.byte	8
+ 1136               	.global	led
+ 1137               		.type	led, @object
+ 1138               		.size	led, 9
+ 1139               	led:
+ 1140 0004 00        		.byte	0
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 21
+
+
+ 1141 0005 01        		.byte	1
+ 1142 0006 02        		.byte	2
+ 1143 0007 04        		.byte	4
+ 1144 0008 08        		.byte	8
+ 1145 0009 10        		.byte	16
+ 1146 000a 20        		.byte	32
+ 1147 000b 40        		.byte	64
+ 1148 000c 80        		.byte	-128
+ 1149               	.global	digit
+ 1150               		.type	digit, @object
+ 1151               		.size	digit, 14
+ 1152               	digit:
+ 1153 000d 3F        		.byte	63
+ 1154 000e 06        		.byte	6
+ 1155 000f 5B        		.byte	91
+ 1156 0010 4F        		.byte	79
+ 1157 0011 66        		.byte	102
+ 1158 0012 6D        		.byte	109
+ 1159 0013 7D        		.byte	125
+ 1160 0014 27        		.byte	39
+ 1161 0015 7F        		.byte	127
+ 1162 0016 6F        		.byte	111
+ 1163 0017 71        		.byte	113
+ 1164 0018 30        		.byte	48
+ 1165 0019 77        		.byte	119
+ 1166 001a 79        		.byte	121
+ 1167               	.global	cnt
+ 1168               	.global	cnt
+ 1169               		.section .bss
+ 1170               		.type	cnt, @object
+ 1171               		.size	cnt, 2
+ 1172               	cnt:
+ 1173 0000 0000      		.skip 2,0
+ 1174               	.global	hope_temp
+ 1175               		.data
+ 1176               		.type	hope_temp, @object
+ 1177               		.size	hope_temp, 2
+ 1178               	hope_temp:
+ 1179 001b 1400      		.word	20
+ 1180               	.global	is_working
+ 1181               	.global	is_working
+ 1182               		.section .bss
+ 1183               		.type	is_working, @object
+ 1184               		.size	is_working, 2
+ 1185               	is_working:
+ 1186 0002 0000      		.skip 2,0
+ 1187               		.comm TaskStk,512,1
+ 1188               		.comm curtemp_Mbox,2,1
+ 1189               		.comm temps_MsgQueue,2,1
+ 1190               		.comm curtemp_sem,2,1
+ 1191               		.comm hopetemp_sem,2,1
+ 1192               		.comm gaptemp_sem,2,1
+ 1193               		.comm start_grp,2,1
+ 1194               		.comm end_grp,2,1
+ 1195               		.comm reset_grp,2,1
+ 1196               		.comm QTable,4,1
+ 1197               		.comm err,1,1
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 22
+
+
+ 1198               		.comm cur_temp,2,1
+ 1199               		.comm gap_temp,2,1
+ 1200               	.global __do_copy_data
+ 1201               	.global __do_clear_bss
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 23
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 lab2.c
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:2      *ABS*:0000003f __SREG__
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:3      *ABS*:0000003e __SP_H__
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:4      *ABS*:0000003d __SP_L__
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:5      *ABS*:00000034 __CCP__
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:6      *ABS*:00000000 __tmp_reg__
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:7      *ABS*:00000001 __zero_reg__
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:11     .text:00000000 __vector_6
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:1185   .bss:00000002 is_working
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:1178   .data:0000001b hope_temp
+                            *COM*:00000002 cur_temp
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:62     .text:0000005e write_twi_1byte_nopreset
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:122    .text:000000e0 write_twi_0byte_nopreset
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:171    .text:00000146 InitI2C
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:189    .text:00000162 ReadTemperature
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:248    .text:000001d8 read_adc
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:268    .text:000001f0 LEDTask
+                            *COM*:00000002 gaptemp_sem
+                            *COM*:00000001 err
+                            *COM*:00000002 gap_temp
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:1139   .data:00000004 led
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:371    .text:000002b6 __vector_5
+                            *COM*:00000002 hopetemp_sem
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:455    .text:00000362 FndDisplayTask
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:1172   .bss:00000000 cnt
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:1152   .data:0000000d digit
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:1131   .data:00000000 fnd_sel
+                            *COM*:00000002 start_grp
+                            *COM*:00000002 temps_MsgQueue
+                            *COM*:00000002 curtemp_Mbox
+                            *COM*:00000002 end_grp
+                            *COM*:00000002 reset_grp
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:767    .text:0000062e endHeatTask
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:876    .text:000006f6 startHeatTask
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:934    .text:00000774 TemperatureTask
+                            *COM*:00000002 curtemp_sem
+C:\Users\user\AppData\Local\Temp/ccykiNVF.s:1001   .text:0000080c main
+                            *COM*:00000004 QTable
+                            *COM*:00000200 TaskStk
+
+UNDEFINED SYMBOLS
+OSSemPend
+OSSemPost
+__divmodhi4
+OSFlagPost
+OSQPend
+OSMboxPend
+OSFlagPend
+OSQPost
+OSMboxPost
+OSInit
+OSSemCreate
+OSMboxCreate
+OSQCreate
+OSFlagCreate
+OSTaskCreate
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccykiNVF.s 			page 24
+
+
+OSStart
+__do_copy_data
+__do_clear_bss

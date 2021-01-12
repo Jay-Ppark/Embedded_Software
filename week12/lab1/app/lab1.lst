@@ -1,0 +1,131 @@
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccthHHx6.s 			page 1
+
+
+   1               		.file	"lab1.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__  = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.text
+   9               	.global	LedTask
+  10               		.type	LedTask, @function
+  11               	LedTask:
+  12               	/* prologue: function */
+  13               	/* frame size = 0 */
+  14 0000 8FEF      		ldi r24,lo8(-1)
+  15 0002 8ABB      		out 58-32,r24
+  16 0004 7091 0000 		lds r23,way
+  17 0008 6091 0000 		lds r22,value
+  18 000c 40E9      		ldi r20,lo8(400)
+  19 000e 51E0      		ldi r21,hi8(400)
+  20               	.L11:
+  21 0010 6BBB      		out 59-32,r22
+  22 0012 20ED      		ldi r18,lo8(2000)
+  23 0014 37E0      		ldi r19,hi8(2000)
+  24               	.L3:
+  25 0016 CA01      		movw r24,r20
+  26               	/* #APP */
+  27               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+  28 0018 0197      		1: sbiw r24,1
+  29 001a 01F4      		brne 1b
+  30               	 ;  0 "" 2
+  31               	/* #NOAPP */
+  32 001c 2150      		subi r18,lo8(-(-1))
+  33 001e 3040      		sbci r19,hi8(-(-1))
+  34 0020 01F4      		brne .L3
+  35 0022 7130      		cpi r23,lo8(1)
+  36 0024 01F0      		breq .L13
+  37 0026 660F      		lsl r22
+  38               	.L5:
+  39 0028 6623      		tst r22
+  40 002a 01F0      		breq .L6
+  41 002c 6038      		cpi r22,lo8(-128)
+  42 002e 01F4      		brne .L11
+  43 0030 71E0      		ldi r23,lo8(1)
+  44 0032 00C0      		rjmp .L11
+  45               	.L6:
+  46 0034 70E0      		ldi r23,lo8(0)
+  47 0036 61E0      		ldi r22,lo8(1)
+  48 0038 00C0      		rjmp .L11
+  49               	.L13:
+  50 003a 6695      		lsr r22
+  51 003c 00C0      		rjmp .L5
+  52               		.size	LedTask, .-LedTask
+  53               	.global	main
+  54               		.type	main, @function
+  55               	main:
+  56               	/* prologue: function */
+  57               	/* frame size = 0 */
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccthHHx6.s 			page 2
+
+
+  58 003e 0E94 0000 		call OSInit
+  59               	/* #APP */
+  60               	 ;  19 "lab1.c" 1
+  61 0042 F894      		cli
+  62               	 ;  0 "" 2
+  63               	/* #NOAPP */
+  64 0044 87E0      		ldi r24,lo8(7)
+  65 0046 83BF      		out 83-32,r24
+  66 0048 81E0      		ldi r24,lo8(1)
+  67 004a 87BF      		out 87-32,r24
+  68 004c 84E6      		ldi r24,lo8(100)
+  69 004e 82BF      		out 82-32,r24
+  70               	/* #APP */
+  71               	 ;  23 "lab1.c" 1
+  72 0050 7894      		sei
+  73               	 ;  0 "" 2
+  74               	/* #NOAPP */
+  75 0052 80E0      		ldi r24,lo8(gs(LedTask))
+  76 0054 90E0      		ldi r25,hi8(gs(LedTask))
+  77 0056 60E0      		ldi r22,lo8(0)
+  78 0058 70E0      		ldi r23,hi8(0)
+  79 005a 40E0      		ldi r20,lo8(LedTaskStk+127)
+  80 005c 50E0      		ldi r21,hi8(LedTaskStk+127)
+  81 005e 20E0      		ldi r18,lo8(0)
+  82 0060 0E94 0000 		call OSTaskCreate
+  83 0064 0E94 0000 		call OSStart
+  84 0068 80E0      		ldi r24,lo8(0)
+  85 006a 90E0      		ldi r25,hi8(0)
+  86               	/* epilogue start */
+  87 006c 0895      		ret
+  88               		.size	main, .-main
+  89               	.global	value
+  90               		.data
+  91               		.type	value, @object
+  92               		.size	value, 1
+  93               	value:
+  94 0000 80        		.byte	-128
+  95               	.global	way
+  96               		.type	way, @object
+  97               		.size	way, 1
+  98               	way:
+  99 0001 01        		.byte	1
+ 100               		.comm LedTaskStk,128,1
+ 101               	.global __do_copy_data
+ 102               	.global __do_clear_bss
+GAS LISTING C:\Users\user\AppData\Local\Temp/ccthHHx6.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 lab1.c
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:2      *ABS*:0000003f __SREG__
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:3      *ABS*:0000003e __SP_H__
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:4      *ABS*:0000003d __SP_L__
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:5      *ABS*:00000034 __CCP__
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:6      *ABS*:00000000 __tmp_reg__
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:7      *ABS*:00000001 __zero_reg__
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:11     .text:00000000 LedTask
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:98     .data:00000001 way
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:93     .data:00000000 value
+C:\Users\user\AppData\Local\Temp/ccthHHx6.s:55     .text:0000003e main
+                            *COM*:00000080 LedTaskStk
+
+UNDEFINED SYMBOLS
+OSInit
+OSTaskCreate
+OSStart
+__do_copy_data
+__do_clear_bss

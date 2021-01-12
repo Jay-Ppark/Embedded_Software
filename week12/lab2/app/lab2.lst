@@ -1,0 +1,483 @@
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc3NCile.s 			page 1
+
+
+   1               		.file	"lab2.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__  = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.text
+   9               	.global	InitI2C
+  10               		.type	InitI2C, @function
+  11               	InitI2C:
+  12               	/* prologue: function */
+  13               	/* frame size = 0 */
+  14 0000 83E0      		ldi r24,lo8(3)
+  15 0002 82BB      		out 50-32,r24
+  16 0004 80B5      		in r24,64-32
+  17 0006 8B7F      		andi r24,lo8(-5)
+  18 0008 80BD      		out 64-32,r24
+  19 000a 1092 7100 		sts 113,__zero_reg__
+  20 000e 80E2      		ldi r24,lo8(32)
+  21 0010 8093 7000 		sts 112,r24
+  22 0014 84E4      		ldi r24,lo8(68)
+  23 0016 8093 7400 		sts 116,r24
+  24               	/* epilogue start */
+  25 001a 0895      		ret
+  26               		.size	InitI2C, .-InitI2C
+  27               	.global	ReadTemperature
+  28               		.type	ReadTemperature, @function
+  29               	ReadTemperature:
+  30               	/* prologue: function */
+  31               	/* frame size = 0 */
+  32 001c 84EA      		ldi r24,lo8(-92)
+  33 001e 8093 7400 		sts 116,r24
+  34               	.L4:
+  35 0022 8091 7400 		lds r24,116
+  36 0026 87FF      		sbrs r24,7
+  37 0028 00C0      		rjmp .L4
+  38 002a 89E9      		ldi r24,lo8(-103)
+  39 002c 8093 7300 		sts 115,r24
+  40 0030 84E8      		ldi r24,lo8(-124)
+  41 0032 8093 7400 		sts 116,r24
+  42               	.L5:
+  43 0036 8091 7400 		lds r24,116
+  44 003a 87FF      		sbrs r24,7
+  45 003c 00C0      		rjmp .L5
+  46 003e 84EC      		ldi r24,lo8(-60)
+  47 0040 8093 7400 		sts 116,r24
+  48               	.L6:
+  49 0044 8091 7400 		lds r24,116
+  50 0048 87FF      		sbrs r24,7
+  51 004a 00C0      		rjmp .L6
+  52 004c 9091 7300 		lds r25,115
+  53 0050 84E8      		ldi r24,lo8(-124)
+  54 0052 8093 7400 		sts 116,r24
+  55               	.L7:
+  56 0056 8091 7400 		lds r24,116
+  57 005a 87FF      		sbrs r24,7
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc3NCile.s 			page 2
+
+
+  58 005c 00C0      		rjmp .L7
+  59 005e 8091 7300 		lds r24,115
+  60 0062 392F      		mov r19,r25
+  61 0064 20E0      		ldi r18,lo8(0)
+  62 0066 90E0      		ldi r25,lo8(0)
+  63 0068 282B      		or r18,r24
+  64 006a 392B      		or r19,r25
+  65 006c 84E9      		ldi r24,lo8(-108)
+  66 006e 8093 7400 		sts 116,r24
+  67 0072 232F      		mov r18,r19
+  68 0074 330F      		lsl r19
+  69 0076 330B      		sbc r19,r19
+  70 0078 2132      		cpi r18,33
+  71 007a 3105      		cpc r19,__zero_reg__
+  72 007c 04F4      		brge .L16
+  73 007e 87B7      		in r24,87-32
+  74 0080 8F7B      		andi r24,lo8(-65)
+  75 0082 87BF      		out 87-32,r24
+  76 0084 C901      		movw r24,r18
+  77               	/* epilogue start */
+  78 0086 0895      		ret
+  79               	.L16:
+  80 0088 87B7      		in r24,87-32
+  81 008a 8064      		ori r24,lo8(64)
+  82 008c 87BF      		out 87-32,r24
+  83 008e C901      		movw r24,r18
+  84 0090 0895      		ret
+  85               		.size	ReadTemperature, .-ReadTemperature
+  86               	.global	write_twi_1byte_nopreset
+  87               		.type	write_twi_1byte_nopreset, @function
+  88               	write_twi_1byte_nopreset:
+  89               	/* prologue: function */
+  90               	/* frame size = 0 */
+  91 0092 982F      		mov r25,r24
+  92 0094 84EA      		ldi r24,lo8(-92)
+  93 0096 8093 7400 		sts 116,r24
+  94               	.L32:
+  95 009a 8091 7400 		lds r24,116
+  96 009e 87FF      		sbrs r24,7
+  97 00a0 00C0      		rjmp .L32
+  98 00a2 8091 7100 		lds r24,113
+  99 00a6 887F      		andi r24,lo8(-8)
+ 100 00a8 8830      		cpi r24,lo8(8)
+ 101 00aa 01F0      		breq .L19
+ 102 00ac 8091 7100 		lds r24,113
+ 103 00b0 887F      		andi r24,lo8(-8)
+ 104 00b2 8031      		cpi r24,lo8(16)
+ 105 00b4 01F4      		brne .L32
+ 106               	.L19:
+ 107 00b6 88E9      		ldi r24,lo8(-104)
+ 108 00b8 8093 7300 		sts 115,r24
+ 109 00bc 84E8      		ldi r24,lo8(-124)
+ 110 00be 8093 7400 		sts 116,r24
+ 111               	.L33:
+ 112 00c2 8091 7400 		lds r24,116
+ 113 00c6 87FF      		sbrs r24,7
+ 114 00c8 00C0      		rjmp .L33
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc3NCile.s 			page 3
+
+
+ 115 00ca 8091 7100 		lds r24,113
+ 116 00ce 887F      		andi r24,lo8(-8)
+ 117 00d0 8831      		cpi r24,lo8(24)
+ 118 00d2 01F4      		brne .L33
+ 119 00d4 9093 7300 		sts 115,r25
+ 120 00d8 84E8      		ldi r24,lo8(-124)
+ 121 00da 8093 7400 		sts 116,r24
+ 122               	.L34:
+ 123 00de 8091 7400 		lds r24,116
+ 124 00e2 87FF      		sbrs r24,7
+ 125 00e4 00C0      		rjmp .L34
+ 126 00e6 8091 7100 		lds r24,113
+ 127 00ea 887F      		andi r24,lo8(-8)
+ 128 00ec 8832      		cpi r24,lo8(40)
+ 129 00ee 01F4      		brne .L34
+ 130 00f0 6093 7300 		sts 115,r22
+ 131 00f4 84E8      		ldi r24,lo8(-124)
+ 132 00f6 8093 7400 		sts 116,r24
+ 133               	.L35:
+ 134 00fa 8091 7400 		lds r24,116
+ 135 00fe 87FF      		sbrs r24,7
+ 136 0100 00C0      		rjmp .L35
+ 137 0102 8091 7100 		lds r24,113
+ 138 0106 887F      		andi r24,lo8(-8)
+ 139 0108 8832      		cpi r24,lo8(40)
+ 140 010a 01F4      		brne .L35
+ 141 010c 84E9      		ldi r24,lo8(-108)
+ 142 010e 8093 7400 		sts 116,r24
+ 143               	/* epilogue start */
+ 144 0112 0895      		ret
+ 145               		.size	write_twi_1byte_nopreset, .-write_twi_1byte_nopreset
+ 146               	.global	write_twi_0byte_nopreset
+ 147               		.type	write_twi_0byte_nopreset, @function
+ 148               	write_twi_0byte_nopreset:
+ 149               	/* prologue: function */
+ 150               	/* frame size = 0 */
+ 151 0114 982F      		mov r25,r24
+ 152 0116 84EA      		ldi r24,lo8(-92)
+ 153 0118 8093 7400 		sts 116,r24
+ 154               	.L48:
+ 155 011c 8091 7400 		lds r24,116
+ 156 0120 87FF      		sbrs r24,7
+ 157 0122 00C0      		rjmp .L48
+ 158 0124 8091 7100 		lds r24,113
+ 159 0128 887F      		andi r24,lo8(-8)
+ 160 012a 8830      		cpi r24,lo8(8)
+ 161 012c 01F0      		breq .L38
+ 162 012e 8091 7100 		lds r24,113
+ 163 0132 887F      		andi r24,lo8(-8)
+ 164 0134 8031      		cpi r24,lo8(16)
+ 165 0136 01F4      		brne .L48
+ 166               	.L38:
+ 167 0138 88E9      		ldi r24,lo8(-104)
+ 168 013a 8093 7300 		sts 115,r24
+ 169 013e 84E8      		ldi r24,lo8(-124)
+ 170 0140 8093 7400 		sts 116,r24
+ 171               	.L49:
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc3NCile.s 			page 4
+
+
+ 172 0144 8091 7400 		lds r24,116
+ 173 0148 87FF      		sbrs r24,7
+ 174 014a 00C0      		rjmp .L49
+ 175 014c 8091 7100 		lds r24,113
+ 176 0150 887F      		andi r24,lo8(-8)
+ 177 0152 8831      		cpi r24,lo8(24)
+ 178 0154 01F4      		brne .L49
+ 179 0156 9093 7300 		sts 115,r25
+ 180 015a 84E8      		ldi r24,lo8(-124)
+ 181 015c 8093 7400 		sts 116,r24
+ 182               	.L50:
+ 183 0160 8091 7400 		lds r24,116
+ 184 0164 87FF      		sbrs r24,7
+ 185 0166 00C0      		rjmp .L50
+ 186 0168 8091 7100 		lds r24,113
+ 187 016c 887F      		andi r24,lo8(-8)
+ 188 016e 8832      		cpi r24,lo8(40)
+ 189 0170 01F4      		brne .L50
+ 190 0172 84E9      		ldi r24,lo8(-108)
+ 191 0174 8093 7400 		sts 116,r24
+ 192               	/* epilogue start */
+ 193 0178 0895      		ret
+ 194               		.size	write_twi_0byte_nopreset, .-write_twi_0byte_nopreset
+ 195               	.global	FndDisplayTask
+ 196               		.type	FndDisplayTask, @function
+ 197               	FndDisplayTask:
+ 198 017a 1F93      		push r17
+ 199 017c DF93      		push r29
+ 200 017e CF93      		push r28
+ 201 0180 CDB7      		in r28,__SP_L__
+ 202 0182 DEB7      		in r29,__SP_H__
+ 203 0184 6397      		sbiw r28,19
+ 204 0186 0FB6      		in __tmp_reg__,__SREG__
+ 205 0188 F894      		cli
+ 206 018a DEBF      		out __SP_H__,r29
+ 207 018c 0FBE      		out __SREG__,__tmp_reg__
+ 208 018e CDBF      		out __SP_L__,r28
+ 209               	/* prologue: function */
+ 210               	/* frame size = 19 */
+ 211 0190 AE01      		movw r20,r28
+ 212 0192 4F5F      		subi r20,lo8(-(1))
+ 213 0194 5F4F      		sbci r21,hi8(-(1))
+ 214 0196 DA01      		movw r26,r20
+ 215 0198 E0E0      		ldi r30,lo8(C.7.1607)
+ 216 019a F0E0      		ldi r31,hi8(C.7.1607)
+ 217 019c 83E1      		ldi r24,lo8(19)
+ 218               	.L52:
+ 219 019e 0190      		ld r0,Z+
+ 220 01a0 0D92      		st X+,r0
+ 221 01a2 8150      		subi r24,lo8(-(-1))
+ 222 01a4 01F4      		brne .L52
+ 223 01a6 8FEF      		ldi r24,lo8(-1)
+ 224 01a8 84BB      		out 52-32,r24
+ 225 01aa 8FE0      		ldi r24,lo8(15)
+ 226 01ac 8093 6400 		sts 100,r24
+ 227 01b0 11E0      		ldi r17,lo8(1)
+ 228 01b2 A0E4      		ldi r26,lo8(8000)
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc3NCile.s 			page 5
+
+
+ 229 01b4 BFE1      		ldi r27,hi8(8000)
+ 230 01b6 32E0      		ldi r19,lo8(2)
+ 231               	.L53:
+ 232 01b8 2091 0000 		lds r18,FndNum
+ 233 01bc 822F      		mov r24,r18
+ 234 01be 6AE0      		ldi r22,lo8(10)
+ 235 01c0 0E94 0000 		call __udivmodqi4
+ 236 01c4 FA01      		movw r30,r20
+ 237 01c6 E90F      		add r30,r25
+ 238 01c8 F11D      		adc r31,__zero_reg__
+ 239 01ca 8081      		ld r24,Z
+ 240 01cc 85BB      		out 53-32,r24
+ 241 01ce 1093 6500 		sts 101,r17
+ 242 01d2 CD01      		movw r24,r26
+ 243               	/* #APP */
+ 244               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 245 01d4 0197      		1: sbiw r24,1
+ 246 01d6 01F4      		brne 1b
+ 247               	 ;  0 "" 2
+ 248               	/* #NOAPP */
+ 249 01d8 822F      		mov r24,r18
+ 250 01da 0E94 0000 		call __udivmodqi4
+ 251 01de FA01      		movw r30,r20
+ 252 01e0 E80F      		add r30,r24
+ 253 01e2 F11D      		adc r31,__zero_reg__
+ 254 01e4 8081      		ld r24,Z
+ 255 01e6 85BB      		out 53-32,r24
+ 256 01e8 3093 6500 		sts 101,r19
+ 257 01ec CD01      		movw r24,r26
+ 258               	/* #APP */
+ 259               	 ;  105 "c:/winavr-20100110/lib/gcc/../../avr/include/util/delay_basic.h" 1
+ 260 01ee 0197      		1: sbiw r24,1
+ 261 01f0 01F4      		brne 1b
+ 262               	 ;  0 "" 2
+ 263               	/* #NOAPP */
+ 264 01f2 00C0      		rjmp .L53
+ 265               		.size	FndDisplayTask, .-FndDisplayTask
+ 266               	.global	FndTask
+ 267               		.type	FndTask, @function
+ 268               	FndTask:
+ 269 01f4 0F93      		push r16
+ 270 01f6 1F93      		push r17
+ 271 01f8 DF93      		push r29
+ 272 01fa CF93      		push r28
+ 273 01fc 0F92      		push __tmp_reg__
+ 274 01fe CDB7      		in r28,__SP_L__
+ 275 0200 DEB7      		in r29,__SP_H__
+ 276               	/* prologue: function */
+ 277               	/* frame size = 1 */
+ 278 0202 8E01      		movw r16,r28
+ 279 0204 0F5F      		subi r16,lo8(-(1))
+ 280 0206 1F4F      		sbci r17,hi8(-(1))
+ 281               	.L57:
+ 282 0208 8091 0000 		lds r24,Mbox
+ 283 020c 9091 0000 		lds r25,(Mbox)+1
+ 284 0210 60E0      		ldi r22,lo8(0)
+ 285 0212 70E0      		ldi r23,hi8(0)
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc3NCile.s 			page 6
+
+
+ 286 0214 A801      		movw r20,r16
+ 287 0216 0E94 0000 		call OSMboxPend
+ 288 021a FC01      		movw r30,r24
+ 289 021c 8081      		ld r24,Z
+ 290 021e 8093 0000 		sts FndNum,r24
+ 291 0222 84E6      		ldi r24,lo8(100)
+ 292 0224 90E0      		ldi r25,hi8(100)
+ 293 0226 0E94 0000 		call OSTimeDly
+ 294 022a 00C0      		rjmp .L57
+ 295               		.size	FndTask, .-FndTask
+ 296               	.global	TemperatureTask
+ 297               		.type	TemperatureTask, @function
+ 298               	TemperatureTask:
+ 299 022c 0F93      		push r16
+ 300 022e 1F93      		push r17
+ 301 0230 DF93      		push r29
+ 302 0232 CF93      		push r28
+ 303 0234 00D0      		rcall .
+ 304 0236 CDB7      		in r28,__SP_L__
+ 305 0238 DEB7      		in r29,__SP_H__
+ 306               	/* prologue: function */
+ 307               	/* frame size = 2 */
+ 308 023a 0E94 0000 		call InitI2C
+ 309 023e 81E0      		ldi r24,lo8(1)
+ 310 0240 60E0      		ldi r22,lo8(0)
+ 311 0242 0E94 0000 		call write_twi_1byte_nopreset
+ 312 0246 80E0      		ldi r24,lo8(0)
+ 313 0248 0E94 0000 		call write_twi_0byte_nopreset
+ 314 024c 8E01      		movw r16,r28
+ 315 024e 0F5F      		subi r16,lo8(-(1))
+ 316 0250 1F4F      		sbci r17,hi8(-(1))
+ 317               	.L60:
+ 318               	/* #APP */
+ 319               	 ;  126 "lab2.c" 1
+ 320 0252 F894      		cli
+ 321               	 ;  0 "" 2
+ 322               	/* #NOAPP */
+ 323 0254 0E94 0000 		call ReadTemperature
+ 324 0258 9A83      		std Y+2,r25
+ 325 025a 8983      		std Y+1,r24
+ 326               	/* #APP */
+ 327               	 ;  128 "lab2.c" 1
+ 328 025c 7894      		sei
+ 329               	 ;  0 "" 2
+ 330               	/* #NOAPP */
+ 331 025e 8091 0000 		lds r24,Mbox
+ 332 0262 9091 0000 		lds r25,(Mbox)+1
+ 333 0266 B801      		movw r22,r16
+ 334 0268 0E94 0000 		call OSMboxPost
+ 335 026c 84E6      		ldi r24,lo8(100)
+ 336 026e 90E0      		ldi r25,hi8(100)
+ 337 0270 0E94 0000 		call OSTimeDly
+ 338 0274 00C0      		rjmp .L60
+ 339               		.size	TemperatureTask, .-TemperatureTask
+ 340               	.global	main
+ 341               		.type	main, @function
+ 342               	main:
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc3NCile.s 			page 7
+
+
+ 343               	/* prologue: function */
+ 344               	/* frame size = 0 */
+ 345 0276 0E94 0000 		call OSInit
+ 346               	/* #APP */
+ 347               	 ;  31 "lab2.c" 1
+ 348 027a F894      		cli
+ 349               	 ;  0 "" 2
+ 350               	/* #NOAPP */
+ 351 027c 87E0      		ldi r24,lo8(7)
+ 352 027e 83BF      		out 83-32,r24
+ 353 0280 81E0      		ldi r24,lo8(1)
+ 354 0282 87BF      		out 87-32,r24
+ 355 0284 84E6      		ldi r24,lo8(100)
+ 356 0286 82BF      		out 82-32,r24
+ 357               	/* #APP */
+ 358               	 ;  35 "lab2.c" 1
+ 359 0288 7894      		sei
+ 360               	 ;  0 "" 2
+ 361               	/* #NOAPP */
+ 362 028a 80E0      		ldi r24,lo8(0)
+ 363 028c 90E0      		ldi r25,hi8(0)
+ 364 028e 0E94 0000 		call OSMboxCreate
+ 365 0292 9093 0000 		sts (Mbox)+1,r25
+ 366 0296 8093 0000 		sts Mbox,r24
+ 367 029a 80E0      		ldi r24,lo8(gs(TemperatureTask))
+ 368 029c 90E0      		ldi r25,hi8(gs(TemperatureTask))
+ 369 029e 60E0      		ldi r22,lo8(0)
+ 370 02a0 70E0      		ldi r23,hi8(0)
+ 371 02a2 40E0      		ldi r20,lo8(TaskStk+127)
+ 372 02a4 50E0      		ldi r21,hi8(TaskStk+127)
+ 373 02a6 20E0      		ldi r18,lo8(0)
+ 374 02a8 0E94 0000 		call OSTaskCreate
+ 375 02ac 80E0      		ldi r24,lo8(gs(FndTask))
+ 376 02ae 90E0      		ldi r25,hi8(gs(FndTask))
+ 377 02b0 60E0      		ldi r22,lo8(0)
+ 378 02b2 70E0      		ldi r23,hi8(0)
+ 379 02b4 40E0      		ldi r20,lo8(TaskStk+255)
+ 380 02b6 50E0      		ldi r21,hi8(TaskStk+255)
+ 381 02b8 21E0      		ldi r18,lo8(1)
+ 382 02ba 0E94 0000 		call OSTaskCreate
+ 383 02be 80E0      		ldi r24,lo8(gs(FndDisplayTask))
+ 384 02c0 90E0      		ldi r25,hi8(gs(FndDisplayTask))
+ 385 02c2 60E0      		ldi r22,lo8(0)
+ 386 02c4 70E0      		ldi r23,hi8(0)
+ 387 02c6 40E0      		ldi r20,lo8(TaskStk+383)
+ 388 02c8 50E0      		ldi r21,hi8(TaskStk+383)
+ 389 02ca 22E0      		ldi r18,lo8(2)
+ 390 02cc 0E94 0000 		call OSTaskCreate
+ 391 02d0 0E94 0000 		call OSStart
+ 392 02d4 80E0      		ldi r24,lo8(0)
+ 393 02d6 90E0      		ldi r25,hi8(0)
+ 394               	/* epilogue start */
+ 395 02d8 0895      		ret
+ 396               		.size	main, .-main
+ 397               		.data
+ 398               		.type	C.7.1607, @object
+ 399               		.size	C.7.1607, 19
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc3NCile.s 			page 8
+
+
+ 400               	C.7.1607:
+ 401 0000 3F        		.byte	63
+ 402 0001 06        		.byte	6
+ 403 0002 5B        		.byte	91
+ 404 0003 4F        		.byte	79
+ 405 0004 66        		.byte	102
+ 406 0005 6D        		.byte	109
+ 407 0006 7D        		.byte	125
+ 408 0007 27        		.byte	39
+ 409 0008 7F        		.byte	127
+ 410 0009 6F        		.byte	111
+ 411 000a 77        		.byte	119
+ 412 000b 7C        		.byte	124
+ 413 000c 39        		.byte	57
+ 414 000d 5E        		.byte	94
+ 415 000e 79        		.byte	121
+ 416 000f 71        		.byte	113
+ 417 0010 80        		.byte	-128
+ 418 0011 40        		.byte	64
+ 419 0012 08        		.byte	8
+ 420               		.comm TaskStk,384,1
+ 421               		.comm Mbox,2,1
+ 422               		.comm FndNum,1,1
+ 423               	.global __do_copy_data
+ 424               	.global __do_clear_bss
+GAS LISTING C:\Users\user\AppData\Local\Temp/cc3NCile.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 lab2.c
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:2      *ABS*:0000003f __SREG__
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:3      *ABS*:0000003e __SP_H__
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:4      *ABS*:0000003d __SP_L__
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:5      *ABS*:00000034 __CCP__
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:6      *ABS*:00000000 __tmp_reg__
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:7      *ABS*:00000001 __zero_reg__
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:11     .text:00000000 InitI2C
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:29     .text:0000001c ReadTemperature
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:88     .text:00000092 write_twi_1byte_nopreset
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:148    .text:00000114 write_twi_0byte_nopreset
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:197    .text:0000017a FndDisplayTask
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:400    .data:00000000 C.7.1607
+                            *COM*:00000001 FndNum
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:268    .text:000001f4 FndTask
+                            *COM*:00000002 Mbox
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:298    .text:0000022c TemperatureTask
+C:\Users\user\AppData\Local\Temp/cc3NCile.s:342    .text:00000276 main
+                            *COM*:00000180 TaskStk
+
+UNDEFINED SYMBOLS
+__udivmodqi4
+OSMboxPend
+OSTimeDly
+OSMboxPost
+OSInit
+OSMboxCreate
+OSTaskCreate
+OSStart
+__do_copy_data
+__do_clear_bss
